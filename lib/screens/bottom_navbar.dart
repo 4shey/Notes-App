@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/models/note.dart';
+import 'package:flutter_notes_app/provider/todo_provider.dart';
 import 'package:flutter_notes_app/screens/edit_note_screen.dart';
 import 'package:flutter_notes_app/screens/home_screen.dart';
 import 'package:flutter_notes_app/screens/todo_screen.dart';
+import 'package:flutter_notes_app/widgets/todo_dialog.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+const mainColor = Color(0xFFD9614C);
 
 class BottomNavbar extends StatefulWidget {
   const BottomNavbar({super.key});
@@ -16,18 +21,17 @@ class _BottomNavbarState extends State<BottomNavbar> {
   int _currentIndex = 0;
   late PageController _pageController;
   List<Note> notes = [];
-
   bool isLoading = true;
 
-  final List<Widget> _pages = [
-    const HomeScreen(key: ValueKey('home')),
-    const ToDoScreen(key: ValueKey('todo')),
-  ];
+  static const _categories = ['personal', 'school', 'work'];
+
+  final List<Widget> _pages = [HomeScreen(), ToDoScreen()];
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _currentIndex);
+    _loadNotesFromPrefs();
   }
 
   Future<void> _openEditNoteScreen({Note? note, int? index}) async {
@@ -72,6 +76,23 @@ class _BottomNavbarState extends State<BottomNavbar> {
     await prefs.setStringList('notes', notesStringList);
   }
 
+  void _onFabPressed() {
+    if (_currentIndex == 0) {
+      _openEditNoteScreen();
+    } else if (_currentIndex == 1) {
+      showDialog(
+        context: context,
+        builder: (_) => ToDoDialog(
+          categories: _categories,
+          todosTitle: '',
+          onSave: (todo) {
+            context.read<ToDoProvider>().addTodo(todo);
+          },
+        ),
+      );
+    }
+  }
+
   @override
   void dispose() {
     _pageController.dispose();
@@ -90,26 +111,47 @@ class _BottomNavbarState extends State<BottomNavbar> {
           });
         },
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 40),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _buildNavItem(Icons.note_outlined, Icons.note, "Notes", 0),
-            _buildNavItem(Icons.list_alt_outlined, Icons.list_alt, "To-Do", 1),
-          ],
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 8,
+        elevation: 8,
+        color: Colors.white,
+        child: SizedBox(
+          height: 65,
+          child: Row(
+            children: [
+              Expanded(
+                child: _buildNavItem(
+                  Icons.note_outlined,
+                  Icons.note,
+                  "Notes",
+                  0,
+                ),
+              ),
+              const Spacer(),
+              Expanded(
+                child: _buildNavItem(
+                  Icons.list_alt_outlined,
+                  Icons.list_alt,
+                  "To-Do",
+                  1,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
+      floatingActionButton: SizedBox(
+        width: 70,
+        height: 70,
+        child: FloatingActionButton(
+          backgroundColor: mainColor,
+          shape: const CircleBorder(),
+          onPressed: _onFabPressed,
+          child: const Icon(Icons.add, size: 32, color: Colors.white),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
@@ -128,40 +170,24 @@ class _BottomNavbarState extends State<BottomNavbar> {
           curve: Curves.easeInOut,
         );
       },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: isActive
-              ? const Color(0xFFD9614C).withOpacity(0.2)
-              : Colors.transparent,
-        ),
+      child: SizedBox(
+        height: double.infinity,
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 250),
-              child: Icon(
-                isActive ? activeIcon : icon,
-                key: ValueKey(isActive),
-                color: const Color(
-                  0xFFD9614C,
-                ).withOpacity(isActive ? 1.0 : 0.5),
-                size: isActive ? 28 : 24,
-              ),
+            Icon(
+              isActive ? activeIcon : icon,
+              color: mainColor.withOpacity(isActive ? 1.0 : 0.5),
+              size: isActive ? 28 : 24,
             ),
-            const SizedBox(height: 4),
-            AnimatedDefaultTextStyle(
-              duration: const Duration(milliseconds: 250),
+            const SizedBox(height: 2),
+            Text(
+              label,
               style: TextStyle(
-                color: const Color(
-                  0xFFD9614C,
-                ).withOpacity(isActive ? 1.0 : 0.5),
+                color: mainColor.withOpacity(isActive ? 1.0 : 0.5),
                 fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                fontSize: 12,
+                fontSize: 11,
               ),
-              child: Text(label),
             ),
           ],
         ),

@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/models/todo.dart';
+import 'package:flutter_notes_app/screens/bottom_navbar.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ToDoDialog extends StatefulWidget {
   final ToDoItem? existing;
   final List<String> categories;
   final VoidCallback? onDelete;
+  final String todosTitle;
+  final Function(ToDoItem)? onSave;
 
   const ToDoDialog({
     super.key,
     this.existing,
     required this.categories,
     this.onDelete,
+    required this.todosTitle,
+    this.onSave,
   });
 
   @override
@@ -19,7 +24,6 @@ class ToDoDialog extends StatefulWidget {
 }
 
 class _ToDoDialogState extends State<ToDoDialog> {
-  // simple: pakai controller agar bisa edit data
   late TextEditingController titleController;
   late TextEditingController descriptionController;
   late String category;
@@ -32,6 +36,8 @@ class _ToDoDialogState extends State<ToDoDialog> {
       text: widget.existing?.description ?? '',
     );
     category = widget.existing?.category ?? 'personal';
+
+    titleController.addListener(() => setState(() {}));
   }
 
   @override
@@ -45,7 +51,6 @@ class _ToDoDialogState extends State<ToDoDialog> {
   Widget build(BuildContext context) {
     final canSave = titleController.text.trim().isNotEmpty;
 
-    // simple: style input
     InputDecoration inputStyle(String label) => InputDecoration(
       labelText: label,
       labelStyle: GoogleFonts.nunito(
@@ -64,7 +69,7 @@ class _ToDoDialogState extends State<ToDoDialog> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: Color(0xFFD9614C), width: 2),
+        borderSide: const BorderSide(color: mainColor, width: 2),
       ),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
     );
@@ -76,7 +81,6 @@ class _ToDoDialogState extends State<ToDoDialog> {
       child: Stack(
         children: [
           SingleChildScrollView(
-            // simple: agar tidak terpotong keyboard
             child: Padding(
               padding: const EdgeInsets.all(20),
               child: ConstrainedBox(
@@ -84,7 +88,7 @@ class _ToDoDialogState extends State<ToDoDialog> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(height: 24), // simple: space untuk X
+                    const SizedBox(height: 24),
                     Text(
                       widget.existing == null ? 'Add ToDo' : 'Edit ToDo',
                       style: GoogleFonts.nunito(
@@ -93,18 +97,13 @@ class _ToDoDialogState extends State<ToDoDialog> {
                       ),
                     ),
                     const SizedBox(height: 16),
-
-                    // simple: Title TextField
                     TextField(
                       controller: titleController,
                       style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
                       autofocus: true,
                       decoration: inputStyle('Title'),
-                      onChanged: (_) => setState(() {}), // simple: enable Save
                     ),
                     const SizedBox(height: 16),
-
-                    // simple: Description TextField
                     TextField(
                       controller: descriptionController,
                       style: GoogleFonts.nunito(fontWeight: FontWeight.w600),
@@ -112,8 +111,6 @@ class _ToDoDialogState extends State<ToDoDialog> {
                       maxLines: 4,
                     ),
                     const SizedBox(height: 16),
-
-                    // simple: Categories
                     Align(
                       alignment: Alignment.centerLeft,
                       child: Text(
@@ -146,15 +143,13 @@ class _ToDoDialogState extends State<ToDoDialog> {
                       }).toList(),
                     ),
                     const SizedBox(height: 20),
-
-                    // simple: tombol Save/Delete dengan background
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
                         if (widget.existing != null && widget.onDelete != null)
                           Container(
                             decoration: BoxDecoration(
-                              color: Color(0xFFD9614C),
+                              color: mainColor,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: IconButton(
@@ -174,15 +169,15 @@ class _ToDoDialogState extends State<ToDoDialog> {
                                       children: const [
                                         Icon(
                                           Icons.warning_amber_rounded,
-                                          color: Color(0xFFD9614C),
+                                          color: mainColor,
                                         ),
                                         SizedBox(width: 8),
                                         Text('Confirm Delete'),
                                       ],
                                     ),
-                                    content: const Text(
-                                      'Are you sure you want to delete this todos?',
-                                      style: TextStyle(fontSize: 16),
+                                    content: Text(
+                                      'Are you sure you want to delete "${widget.todosTitle}"',
+                                      style: const TextStyle(fontSize: 16),
                                     ),
                                     actionsPadding: const EdgeInsets.symmetric(
                                       horizontal: 16,
@@ -209,9 +204,7 @@ class _ToDoDialogState extends State<ToDoDialog> {
                                       ),
                                       ElevatedButton(
                                         style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(
-                                            0xFFD9614C,
-                                          ),
+                                          backgroundColor: mainColor,
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(
                                               12,
@@ -238,19 +231,14 @@ class _ToDoDialogState extends State<ToDoDialog> {
                         const SizedBox(width: 8),
                         Container(
                           decoration: BoxDecoration(
-                            color: canSave
-                                ? const Color(0xFFD9614C)
-                                : Colors
-                                      .grey
-                                      .shade400, // simple: ganti bg saat disable
+                            color: canSave ? mainColor : Colors.grey.shade400,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: IconButton(
                             icon: const Icon(Icons.save, color: Colors.white),
                             onPressed: canSave
                                 ? () {
-                                    Navigator.pop(
-                                      context,
+                                    widget.onSave?.call(
                                       ToDoItem(
                                         id:
                                             widget.existing?.id ??
@@ -270,6 +258,7 @@ class _ToDoDialogState extends State<ToDoDialog> {
                                             false,
                                       ),
                                     );
+                                    Navigator.pop(context);
                                   }
                                 : null,
                           ),
@@ -281,7 +270,6 @@ class _ToDoDialogState extends State<ToDoDialog> {
               ),
             ),
           ),
-          // simple: X button pojok kanan atas
           Positioned(
             right: 8,
             top: 8,

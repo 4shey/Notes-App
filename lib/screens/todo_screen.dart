@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_notes_app/models/todo.dart';
-import 'package:flutter_notes_app/models/todo_storage.dart';
+import 'package:flutter_notes_app/provider/todo_provider.dart';
 import 'package:flutter_notes_app/widgets/empty_search.dart';
 import 'package:flutter_notes_app/widgets/empty_state.dart';
 import 'package:flutter_notes_app/widgets/filter_todos_drawer.dart';
 import 'package:flutter_notes_app/widgets/todo_card.dart';
 import 'package:flutter_notes_app/widgets/todo_dialog.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class ToDoScreen extends StatefulWidget {
   const ToDoScreen({super.key});
@@ -18,54 +18,12 @@ class ToDoScreen extends StatefulWidget {
 class _ToDoScreenState extends State<ToDoScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  List<ToDoItem> _todos = [];
-  bool _isLoading = true;
-
   String _statusFilter = 'all';
   String _categoryFilter = 'all';
   bool _searchActive = false;
   String _searchQuery = '';
 
   static const _categories = ['personal', 'school', 'work'];
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    final loaded = await ToDoStorage.load();
-    setState(() {
-      _todos = loaded;
-      _isLoading = false;
-    });
-  }
-
-  Future<void> _save() async => ToDoStorage.save(_todos);
-
-  List<int> get _displayIndices {
-    final indices = <int>[];
-    for (var i = 0; i < _todos.length; i++) {
-      final t = _todos[i];
-      if (_statusFilter == 'completed' && !t.isCompleted) continue;
-      if (_statusFilter == 'pending' && t.isCompleted) continue;
-      if (_categoryFilter != 'all' && t.category != _categoryFilter) continue;
-      if (_searchQuery.isNotEmpty &&
-          !t.title.toLowerCase().contains(_searchQuery.toLowerCase())) {
-        continue;
-      }
-      indices.add(i);
-    }
-    return indices;
-  }
-
-  void _toggleCompleted(int originalIndex) {
-    setState(() {
-      _todos[originalIndex].isCompleted = !_todos[originalIndex].isCompleted;
-    });
-    _save();
-  }
 
   void _closeSearch() {
     setState(() {
@@ -74,36 +32,12 @@ class _ToDoScreenState extends State<ToDoScreen> {
     });
   }
 
-  Future<void> _openTodoDialog({ToDoItem? existing, int? originalIndex}) async {
-    final result = await showDialog<ToDoItem>(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => ToDoDialog(
-        existing: existing,
-        categories: _categories,
-        onDelete: existing != null
-            ? () => _deleteTodo(originalIndex!)
-            : null,
-      ),
-    );
-
-    if (result != null) {
-      setState(() {
-        if (existing == null) {
-          _todos.add(result);
-        } else {
-          _todos[originalIndex!] = result;
-        }
-      });
-      _save();
-    }
-  }
-
-  Future<void> _deleteTodo(int index) async {
-    setState(() {
-      _todos.removeAt(index);
-    });
-    _save();
+  @override
+  void initState() {
+    super.initState();
+    // load todos via provider
+    final provider = Provider.of<ToDoProvider>(context, listen: false);
+    provider.loadTodos();
   }
 
   @override
@@ -163,11 +97,11 @@ class _ToDoScreenState extends State<ToDoScreen> {
                                 child: Text(
                                   _statusFilter == "all"
                                       ? (_categoryFilter == 'all'
-                                          ? 'All ToDos'
-                                          : '${_categoryFilter[0].toUpperCase()}${_categoryFilter.substring(1)} ToDos')
+                                            ? 'All ToDos'
+                                            : '${_categoryFilter[0].toUpperCase()}${_categoryFilter.substring(1)} ToDos')
                                       : _statusFilter == "completed"
-                                          ? 'Completed ToDos'
-                                          : 'Pending ToDos',
+                                      ? 'Completed ToDos'
+                                      : 'Pending ToDos',
                                   style: GoogleFonts.nunito(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w900,
@@ -220,50 +154,68 @@ class _ToDoScreenState extends State<ToDoScreen> {
               ),
               const SizedBox(height: 12),
               Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : (_displayIndices.isEmpty
-                        ? Center(
-                            child: _searchActive && _searchQuery.isNotEmpty
-                                ? EmptySearchWidget(query: _searchQuery)
-                                : EmptyDataWidget(
-                                    title: 'No ToDos yet',
-                                    subtitle: 'Tap "+" to add your todos.',
-                                    screenSize: MediaQuery.of(context).size,
-                                  ),
-                          )
-                        : ListView.builder(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: horizontalPadding,
-                            ),
-                            itemCount: _displayIndices.length,
-                            itemBuilder: (context, idx) {
-                              final originalIndex = _displayIndices[idx];
-                              final todo = _todos[originalIndex];
-                              return ToDoCard(
-                                todo: todo,
-                                onChanged: (_) =>
-                                    _toggleCompleted(originalIndex),
-                                onTap: () => _openTodoDialog(
-                                  existing: todo,
-                                  originalIndex: originalIndex,
-                                ),
-                              );
-                            },
-                          )),
+                child: Consumer<ToDoProvider>(
+                  builder: (context, provider, _) {
+                    final todos = provider.todos;
+                    final displayIndices = <int>[];
+
+                    for (var i = 0; i < todos.length; i++) {
+                      final t = todos[i];
+                      if (_statusFilter == 'completed' && !t.isCompleted) continue;
+                      if (_statusFilter == 'pending' && t.isCompleted) continue;
+                      if (_categoryFilter != 'all' && t.category != _categoryFilter) continue;
+                      if (_searchQuery.isNotEmpty &&
+                          !t.title.toLowerCase().contains(_searchQuery.toLowerCase())) continue;
+                      displayIndices.add(i);
+                    }
+
+                    if (provider.isLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+
+                    if (displayIndices.isEmpty) {
+                      return Center(
+                        child: _searchActive && _searchQuery.isNotEmpty
+                            ? EmptySearchWidget(query: _searchQuery)
+                            : EmptyDataWidget(
+                                title: 'No ToDos yet',
+                                subtitle: 'Tap "+" to add your todos.',
+                                screenSize: MediaQuery.of(context).size,
+                              ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      itemCount: displayIndices.length,
+                      itemBuilder: (context, idx) {
+                        final index = displayIndices[idx];
+                        final todo = todos[index];
+                        return ToDoCard(
+                          todo: todo,
+                          onChanged: (_) => provider.toggleCompleted(index),
+                          onTap: () async {
+                            await showDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (_) => ToDoDialog(
+                                existing: todo,
+                                categories: _categories,
+                                todosTitle: todo.title,
+                                onSave: (t) => provider.updateTodo(index, t),
+                                onDelete: () => provider.deleteTodo(index),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
             ],
           ),
         ),
-      ),
-
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Color(0xFFD9614C),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Icon(Icons.add, size: 28, color: Colors.white),
-        onPressed: () => _openTodoDialog(),
       ),
     );
   }

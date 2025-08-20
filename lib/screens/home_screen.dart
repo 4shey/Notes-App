@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_notes_app/models/note.dart';
+import 'package:flutter_notes_app/provider/note_provider.dart';
 import 'package:flutter_notes_app/screens/edit_note_screen.dart';
 import 'package:flutter_notes_app/widgets/empty_search.dart';
 import 'package:flutter_notes_app/widgets/empty_state.dart';
 import 'package:flutter_notes_app/widgets/filter_notes_drawer.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_notes_app/widgets/note_card.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import '../models/note.dart';
-import '../widgets/note_card.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-  
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -21,40 +20,15 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  List<Note> notes = [];
-  bool isLoading = true;
-
   String selectedCategory = "all";
   String searchQuery = "";
   bool searchActive = false;
 
   Size? _screenSize;
 
-  @override  Future<void> _openEditNoteScreen({Note? note, int? index}) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            EditNoteScreen(existingNote: note, noteIndex: index),
-      ),
-    );
-
-    if (result != null && result is Map<String, dynamic>) {
-      final action = result['action'];
-
-      setState(() {
-        if (action == 'deleted' && index != null) {
-          notes.removeAt(index);
-        } else if (action == 'saved') {
-          _loadNotesFromPrefs();
-        }
-      });
-      _saveNotesToPrefs();
-    }
-  }
+  @override
   void initState() {
     super.initState();
-    _loadNotesFromPrefs();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       setState(() {
         _screenSize = MediaQuery.of(context).size;
@@ -62,26 +36,18 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Future<void> _loadNotesFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final notesStringList = prefs.getStringList('notes') ?? [];
-    final loadedNotes = notesStringList
-        .map((str) => Note.fromJson(str))
-        .toList();
-
-    setState(() {
-      notes = loadedNotes;
-      isLoading = false;
-    });
+  Future<void> _openEditNoteScreen({Note? note, int? index}) async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            EditNoteScreen(existingNote: note, noteIndex: index),
+      ),
+    );
+    // Tidak perlu setState, provider akan rebuild otomatis
   }
 
-  Future<void> _saveNotesToPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final notesStringList = notes.map((n) => n.toJson()).toList();
-    await prefs.setStringList('notes', notesStringList);
-  }
-
-  List<Note> get filteredNotes {
+  List<Note> filteredNotes(List<Note> notes) {
     List<Note> baseFiltered;
 
     if (selectedCategory == "favorites") {
@@ -106,36 +72,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return baseFiltered;
   }
 
-  void toggleFavorite(int index) {
-    setState(() {
-      notes[index].favorite = !notes[index].favorite;
-    });
-    _saveNotesToPrefs();
-  }
-
-  // Future<void> _openEditNoteScreen({Note? note, int? index}) async {
-  //   final result = await Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder: (context) =>
-  //           EditNoteScreen(existingNote: note, noteIndex: index),
-  //     ),
-  //   );
-
-  //   if (result != null && result is Map<String, dynamic>) {
-  //     final action = result['action'];
-
-  //     setState(() {
-  //       if (action == 'deleted' && index != null) {
-  //         notes.removeAt(index);
-  //       } else if (action == 'saved') {
-  //         _loadNotesFromPrefs();
-  //       }
-  //     });
-  //     _saveNotesToPrefs();
-  //   }
-  // }
-
   void _closeSearch() {
     setState(() {
       searchActive = false;
@@ -145,11 +81,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final double topPadding = 18;
-    final double horizontalPadding = 20;
+    final noteProvider = context.watch<NoteProvider>();
+    final notes = noteProvider.notes;
+    final displayedNotes = filteredNotes(notes);
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF8EEE2),
       drawer: searchActive
@@ -174,11 +110,9 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (context, constraints) {
               return Column(
                 children: [
-                  SizedBox(height: topPadding),
+                  const SizedBox(height: 18),
                   Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: horizontalPadding,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: SizedBox(
                       height: 48,
                       child: Row(
@@ -191,9 +125,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   height: 20,
                                   fit: BoxFit.contain,
                                 ),
-                                onPressed: () {
-                                  _scaffoldKey.currentState?.openDrawer();
-                                },
+                                onPressed: () =>
+                                    _scaffoldKey.currentState?.openDrawer(),
                               ),
                             ),
                           if (!searchActive) const SizedBox(width: 10),
@@ -237,9 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ),
                                     onChanged: (value) {
-                                      setState(() {
-                                        searchQuery = value;
-                                      });
+                                      setState(() => searchQuery = value);
                                     },
                                   ),
                           ),
@@ -252,11 +183,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                   height: 20,
                                   fit: BoxFit.contain,
                                 ),
-                                onPressed: () {
-                                  setState(() {
-                                    searchActive = true;
-                                  });
-                                },
+                                onPressed: () =>
+                                    setState(() => searchActive = true),
                               ),
                             ),
                         ],
@@ -265,17 +193,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 12),
                   Expanded(
-                    child: isLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : filteredNotes.isEmpty
+                    child: notes.isEmpty
+                        ? EmptyDataWidget(
+                            title: 'No Notes yet',
+                            subtitle: 'Tap the + button to add your note.',
+                            screenSize: _screenSize ?? const Size(0, 0),
+                          )
+                        : displayedNotes.isEmpty
                         ? searchActive && searchQuery.isNotEmpty
                               ? Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      EmptySearchWidget(query: searchQuery),
-                                    ],
-                                  ),
+                                  child: EmptySearchWidget(query: searchQuery),
                                 )
                               : EmptyDataWidget(
                                   title: 'No Notes yet',
@@ -284,19 +211,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                   screenSize: _screenSize ?? const Size(0, 0),
                                 )
                         : Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 0,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
                             child: MasonryGridView.count(
                               crossAxisCount: 2,
                               mainAxisSpacing: 12,
                               crossAxisSpacing: 12,
-                              itemCount: filteredNotes.length,
+                              itemCount: displayedNotes.length,
                               itemBuilder: (context, index) {
-                                final note = filteredNotes[index];
+                                final note = displayedNotes[index];
                                 final originalIndex = notes.indexOf(note);
-
                                 return GestureDetector(
                                   onTap: () => _openEditNoteScreen(
                                     note: note,
@@ -305,8 +228,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                   child: NoteCard(
                                     note: note,
                                     favorite: note.favorite,
-                                    onFavoriteToggle: () =>
-                                        toggleFavorite(originalIndex),
+                                    onFavoriteToggle: () {
+                                      noteProvider.toggleFavorite(
+                                        originalIndex,
+                                      );
+                                    },
                                   ),
                                 );
                               },
@@ -318,14 +244,6 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
         ),
-      ),
-       floatingActionButton: FloatingActionButton(
-        backgroundColor: Color(0xFFD9614C),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: const Icon(Icons.add, size: 28, color: Colors.white),
-        onPressed: () => _openEditNoteScreen(),
       ),
     );
   }

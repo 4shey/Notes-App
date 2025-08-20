@@ -21,7 +21,7 @@ class ToDoCard extends StatelessWidget {
       case 'school':
         return const Color(0xFFFFF3CD);
       default:
-        return const Color(0xFFD4EDDA); // personal
+        return const Color(0xFFD4EDDA);
     }
   }
 
@@ -64,7 +64,30 @@ class ToDoCard extends StatelessWidget {
           children: [
             Checkbox(
               value: todo.isCompleted,
-              onChanged: onChanged,
+              onChanged: (value) {
+                onChanged(value);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      value == true
+                          ? "Task \"${todo.title}\" completed"
+                          : "Task \"${todo.title}\" marked incomplete",
+                      style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+                    ),
+                    backgroundColor: const Color(0xFFD9614C),
+                    duration: const Duration(seconds: 1),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                );
+              },
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(4),
               ),

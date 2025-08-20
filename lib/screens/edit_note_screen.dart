@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_notes_app/provider/note_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import '../models/note.dart';
 
 class EditNoteScreen extends StatefulWidget {
-  final Note? existingNote; //null = tambah, not null = edit
-  final int? noteIndex; // posisi
+  final Note? existingNote;
+  final int? noteIndex;
 
   const EditNoteScreen({super.key, this.existingNote, this.noteIndex});
 
@@ -30,44 +31,14 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
     }
   }
 
-  //save
-  Future<void> _saveNoteToPrefs(Note note) async {
-    final prefs = await SharedPreferences.getInstance();
-    List<String> notesStringList = prefs.getStringList('notes') ?? [];
-    List<Note> notesList = notesStringList
-        .map((str) => Note.fromJson(str))
-        .toList();
-
-    if (widget.existingNote != null && widget.noteIndex != null) {
-      notesList[widget.noteIndex!] = note;
-    } else {
-      notesList.add(note);
-    }
-
-    await prefs.setStringList(
-      'notes',
-      notesList.map((note) => note.toJson()).toList(),
-    );
-  }
-
-  //delete
-  Future<void> _deleteNoteFromPrefs(int index) async {
-    final prefs = await SharedPreferences.getInstance();
-    List<String> notesStringList = prefs.getStringList('notes') ?? [];
-    if (index < 0 || index >= notesStringList.length) return;
-    notesStringList.removeAt(index);
-    await prefs.setStringList('notes', notesStringList);
-  }
-
   @override
   Widget build(BuildContext context) {
     bool isEditMode = widget.existingNote != null;
+    final noteProvider = context.read<NoteProvider>();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8EEE2),
       endDrawer: _buildCategoryDrawer(),
-
-      //appbar
       appBar: AppBar(
         centerTitle: true,
         backgroundColor: Colors.transparent,
@@ -76,14 +47,10 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
           isEditMode ? "Edit Note" : "Create Note",
           style: GoogleFonts.nunito(fontSize: 20, fontWeight: FontWeight.w900),
         ),
-
-        //back
         leading: IconButton(
           icon: Image.asset('assets/images/arrow_back.png', height: 22),
           onPressed: () => Navigator.pop(context),
         ),
-
-        //actions
         actions: [
           if (isEditMode)
             Container(
@@ -112,7 +79,7 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                           Text('Confirm Delete'),
                         ],
                       ),
-                      content: const Text('Are you sure you want to delete?'),
+                     content: Text('Are you sure you want to delete "${widget.existingNote?.title}"?'),
                       actions: [
                         OutlinedButton(
                           onPressed: () => Navigator.pop(context, false),
@@ -135,14 +102,12 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                     ),
                   );
                   if (confirm == true && widget.noteIndex != null) {
-                    await _deleteNoteFromPrefs(widget.noteIndex!);
-                    Navigator.pop(context, {"action": "deleted"});
+                    await noteProvider.delete(widget.noteIndex!);
+                    Navigator.pop(context);
                   }
                 },
               ),
             ),
-
-          //category bar
           Builder(
             builder: (context) => IconButton(
               icon: Image.asset('assets/images/bar_icon.png', height: 22),
@@ -152,15 +117,12 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
           const SizedBox(width: 8),
         ],
       ),
-
-      //body
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              //title
               TextField(
                 controller: titleController,
                 style: GoogleFonts.nunito(
@@ -173,7 +135,6 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
-              //descripsi
               TextField(
                 controller: contentController,
                 style: GoogleFonts.nunito(
@@ -192,8 +153,6 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
           ),
         ),
       ),
-
-      //btn centang
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFFD9614C),
         onPressed: () async {
@@ -205,8 +164,14 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
               content: contentController.text,
               category: selectedCategory!,
             );
-            await _saveNoteToPrefs(newNote);
-            Navigator.pop(context, {"action": "saved"});
+
+            if (widget.noteIndex != null) {
+              await noteProvider.addOrUpdate(newNote, index: widget.noteIndex);
+            } else {
+              await noteProvider.addOrUpdate(newNote);
+            }
+
+            Navigator.pop(context);
           } else {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
@@ -221,7 +186,6 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
     );
   }
 
-  //drawer kategori
   Widget _buildCategoryDrawer() {
     return Drawer(
       child: SafeArea(
