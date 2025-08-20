@@ -16,10 +16,8 @@ class EditNoteScreen extends StatefulWidget {
 class _EditNoteScreenState extends State<EditNoteScreen> {
   final TextEditingController titleController = TextEditingController();
   final TextEditingController contentController = TextEditingController();
-
   String? selectedCategory;
 
-  @override
   @override
   void initState() {
     super.initState();
@@ -32,6 +30,7 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
     }
   }
 
+  //save
   Future<void> _saveNoteToPrefs(Note note) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> notesStringList = prefs.getStringList('notes') ?? [];
@@ -45,12 +44,13 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
       notesList.add(note);
     }
 
-    List<String> updatedNotesStringList = notesList
-        .map((note) => note.toJson())
-        .toList();
-    await prefs.setStringList('notes', updatedNotesStringList);
+    await prefs.setStringList(
+      'notes',
+      notesList.map((note) => note.toJson()).toList(),
+    );
   }
 
+  //delete
   Future<void> _deleteNoteFromPrefs(int index) async {
     final prefs = await SharedPreferences.getInstance();
     List<String> notesStringList = prefs.getStringList('notes') ?? [];
@@ -66,56 +66,101 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8EEE2),
       endDrawer: _buildCategoryDrawer(),
+
+      //appbar
       appBar: AppBar(
         centerTitle: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: Text(
           isEditMode ? "Edit Note" : "Create Note",
           style: GoogleFonts.nunito(fontSize: 20, fontWeight: FontWeight.w900),
         ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+
+        //back
         leading: IconButton(
-          icon: Image.asset(
-            'assets/images/arrow_back.png',
-            height: 20,
-            fit: BoxFit.contain,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          icon: Image.asset('assets/images/arrow_back.png', height: 22),
+          onPressed: () => Navigator.pop(context),
         ),
+
+        //actions
         actions: [
           if (isEditMode)
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red),
-              onPressed: () async {
-                if (widget.noteIndex != null) {
-                  await _deleteNoteFromPrefs(widget.noteIndex!);
-                }
-                Navigator.pop(context, {"action": "deleted"});
-              },
+            Container(
+              margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFD9614C),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: IconButton(
+                icon: const Icon(Icons.delete, color: Colors.white),
+                onPressed: () async {
+                  final confirm = await showDialog<bool>(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      backgroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      title: Row(
+                        children: const [
+                          Icon(
+                            Icons.warning_amber_rounded,
+                            color: Color(0xFFD9614C),
+                          ),
+                          SizedBox(width: 8),
+                          Text('Confirm Delete'),
+                        ],
+                      ),
+                      content: const Text('Are you sure you want to delete?'),
+                      actions: [
+                        OutlinedButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          child: const Text(
+                            "Cancel",
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Color(0xFFD9614C),
+                          ),
+                          onPressed: () => Navigator.pop(context, true),
+                          child: const Text(
+                            "Delete",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                  if (confirm == true && widget.noteIndex != null) {
+                    await _deleteNoteFromPrefs(widget.noteIndex!);
+                    Navigator.pop(context, {"action": "deleted"});
+                  }
+                },
+              ),
             ),
+
+          //category bar
           Builder(
             builder: (context) => IconButton(
-              icon: Image.asset(
-                'assets/images/bar_icon.png',
-                height: 20,
-                fit: BoxFit.contain,
-              ),
-              onPressed: () {
-                Scaffold.of(context).openEndDrawer();
-              },
+              icon: Image.asset('assets/images/bar_icon.png', height: 22),
+              onPressed: () => Scaffold.of(context).openEndDrawer(),
             ),
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 8),
         ],
       ),
 
+      //body
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         child: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              //title
               TextField(
                 controller: titleController,
                 style: GoogleFonts.nunito(
@@ -128,6 +173,7 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                   contentPadding: EdgeInsets.zero,
                 ),
               ),
+              //descripsi
               TextField(
                 controller: contentController,
                 style: GoogleFonts.nunito(
@@ -146,42 +192,36 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
           ),
         ),
       ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 10, right: 10),
-        child: FloatingActionButton(
-          backgroundColor: const Color(0xFFD9614C),
-          onPressed: () async {
-            if (titleController.text.isNotEmpty &&
-                contentController.text.isNotEmpty &&
-                selectedCategory != null) {
-              final newNote = Note(
-                title: titleController.text,
-                content: contentController.text,
-                category: selectedCategory!,
-              );
-              await _saveNoteToPrefs(newNote);
-              Navigator.pop(context, {"action": "saved"});
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text(
-                    'Please fill out the title, content, and select a category',
-                  ),
-                  backgroundColor: const Color(0xFFD9614C),
-                  behavior:
-                      SnackBarBehavior.fixed,
-                ),
-              );
-            }
-          },
-          child: const Icon(Icons.check, color: Colors.white),
-        ),
-      ),
 
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      //btn centang
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: const Color(0xFFD9614C),
+        onPressed: () async {
+          if (titleController.text.isNotEmpty &&
+              contentController.text.isNotEmpty &&
+              selectedCategory != null) {
+            final newNote = Note(
+              title: titleController.text,
+              content: contentController.text,
+              category: selectedCategory!,
+            );
+            await _saveNoteToPrefs(newNote);
+            Navigator.pop(context, {"action": "saved"});
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Please fill out all fields"),
+                backgroundColor: Color(0xFFD9614C),
+              ),
+            );
+          }
+        },
+        child: const Icon(Icons.check, color: Colors.white),
+      ),
     );
   }
 
+  //drawer kategori
   Widget _buildCategoryDrawer() {
     return Drawer(
       child: SafeArea(
@@ -189,65 +229,29 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
           padding: const EdgeInsets.all(16),
           children: [
             Text(
-              'Select Category',
+              "Select Category",
               style: GoogleFonts.nunito(
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
               ),
             ),
             const Divider(),
-            RadioListTile<String>(
-              value: "personal",
-              groupValue: selectedCategory,
-              title: Text(
-                "Personal",
-                style: GoogleFonts.nunito(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
+            for (var c in ["personal", "work", "school"])
+              RadioListTile<String>(
+                value: c,
+                groupValue: selectedCategory,
+                title: Text(
+                  c[0].toUpperCase() + c.substring(1),
+                  style: GoogleFonts.nunito(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
+                onChanged: (value) {
+                  setState(() => selectedCategory = value);
+                  Navigator.pop(context);
+                },
               ),
-              onChanged: (value) {
-                setState(() {
-                  selectedCategory = value;
-                });
-                Navigator.pop(context);
-              },
-            ),
-            RadioListTile<String>(
-              value: "work",
-              groupValue: selectedCategory,
-              title: Text(
-                "Work",
-                style: GoogleFonts.nunito(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  selectedCategory = value;
-                });
-                Navigator.pop(context);
-              },
-            ),
-            RadioListTile<String>(
-              
-              value: "school",
-              groupValue: selectedCategory,
-              title: Text(
-                "School",
-                style: GoogleFonts.nunito(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              onChanged: (value) {
-                setState(() {
-                  selectedCategory = value;
-                });
-                Navigator.pop(context);
-              },
-            ),
           ],
         ),
       ),

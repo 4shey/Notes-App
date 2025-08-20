@@ -12,6 +12,7 @@ import '../widgets/note_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+  
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -29,7 +30,28 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Size? _screenSize;
 
-  @override
+  @override  Future<void> _openEditNoteScreen({Note? note, int? index}) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            EditNoteScreen(existingNote: note, noteIndex: index),
+      ),
+    );
+
+    if (result != null && result is Map<String, dynamic>) {
+      final action = result['action'];
+
+      setState(() {
+        if (action == 'deleted' && index != null) {
+          notes.removeAt(index);
+        } else if (action == 'saved') {
+          _loadNotesFromPrefs();
+        }
+      });
+      _saveNotesToPrefs();
+    }
+  }
   void initState() {
     super.initState();
     _loadNotesFromPrefs();
@@ -91,28 +113,28 @@ class _HomeScreenState extends State<HomeScreen> {
     _saveNotesToPrefs();
   }
 
-  Future<void> _openEditNoteScreen({Note? note, int? index}) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            EditNoteScreen(existingNote: note, noteIndex: index),
-      ),
-    );
+  // Future<void> _openEditNoteScreen({Note? note, int? index}) async {
+  //   final result = await Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) =>
+  //           EditNoteScreen(existingNote: note, noteIndex: index),
+  //     ),
+  //   );
 
-    if (result != null && result is Map<String, dynamic>) {
-      final action = result['action'];
+  //   if (result != null && result is Map<String, dynamic>) {
+  //     final action = result['action'];
 
-      setState(() {
-        if (action == 'deleted' && index != null) {
-          notes.removeAt(index);
-        } else if (action == 'saved') {
-          _loadNotesFromPrefs();
-        }
-      });
-      _saveNotesToPrefs();
-    }
-  }
+  //     setState(() {
+  //       if (action == 'deleted' && index != null) {
+  //         notes.removeAt(index);
+  //       } else if (action == 'saved') {
+  //         _loadNotesFromPrefs();
+  //       }
+  //     });
+  //     _saveNotesToPrefs();
+  //   }
+  // }
 
   void _closeSearch() {
     setState(() {
@@ -258,7 +280,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               : EmptyDataWidget(
                                   title: 'No Notes yet',
                                   subtitle:
-                                      'Tap the + button to add your first note.',
+                                      'Tap the + button to add your note.',
                                   screenSize: _screenSize ?? const Size(0, 0),
                                 )
                         : Padding(
@@ -297,14 +319,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-
-      floatingActionButton: searchActive
-          ? null
-          : FloatingActionButton(
-              backgroundColor: const Color(0xFFD9614C),
-              onPressed: () => _openEditNoteScreen(),
-              child: const Icon(Icons.add, size: 28, color: Colors.white),
-            ),
+       floatingActionButton: FloatingActionButton(
+        backgroundColor: Color(0xFFD9614C),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Icon(Icons.add, size: 28, color: Colors.white),
+        onPressed: () => _openEditNoteScreen(),
+      ),
     );
   }
 }

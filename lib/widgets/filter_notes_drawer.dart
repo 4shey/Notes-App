@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class FilterDrawerHome extends StatefulWidget {
-  final String selectedCategory;
-  final Function(String) onCategorySelected;
+  final String selectedCategory; // category awal yang dipilih
+  final Function(String) onCategorySelected; // callback ke parent
 
   const FilterDrawerHome({
     super.key,
@@ -16,14 +16,14 @@ class FilterDrawerHome extends StatefulWidget {
 }
 
 class _FilterDrawerHomeState extends State<FilterDrawerHome> {
-  late String _currentCategory;
+  late String _currentCategory; // category yang sedang dipilih
 
-  final List<String> _categories = ['all', 'favorites', 'personal', 'work', 'school'];
+  final List<String> _categories = ['all', 'favorites', 'personal', 'work', 'school']; // daftar category
 
   @override
   void initState() {
     super.initState();
-    _currentCategory = widget.selectedCategory;
+    _currentCategory = widget.selectedCategory; // set category awal
   }
 
   @override
@@ -34,12 +34,13 @@ class _FilterDrawerHomeState extends State<FilterDrawerHome> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
+            // Header drawer
             DrawerHeader(
-              decoration: const BoxDecoration(color: Color(0xFFD9614C)),
+              decoration: const BoxDecoration(color: Color(0xFFD9614C)), // warna background
               child: Align(
                 alignment: Alignment.bottomLeft,
                 child: Text(
-                  'Filter Notes',
+                  'Filter Notes', // judul drawer
                   style: GoogleFonts.nunito(
                     color: Colors.white,
                     fontSize: 20,
@@ -48,35 +49,37 @@ class _FilterDrawerHomeState extends State<FilterDrawerHome> {
                 ),
               ),
             ),
+            // Label Category
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               child: Text(
-                'Category',
+                'Category', // teks label
                 style: GoogleFonts.nunito(
                   fontWeight: FontWeight.w900,
                 ),
               ),
             ),
+            // List Radio untuk tiap category
             ..._categories.map((c) {
-              final displayName = c == 'all'
+              final displayName = c == 'all' // tampilkan All
                   ? 'All'
-                  : c == 'favorites'
+                  : c == 'favorites' // tampilkan Favorites
                       ? 'Favorites'
-                      : '${c[0].toUpperCase()}${c.substring(1)}';
+                      : '${c[0].toUpperCase()}${c.substring(1)}'; // capitalize huruf pertama
               return RadioListTile<String>(
                 title: Text(
-                  displayName,
+                  displayName, // teks category
                   style: GoogleFonts.nunito(
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                value: c,
-                groupValue: _currentCategory,
-                activeColor: const Color(0xFFD9614C),
+                value: c, // nilai category
+                groupValue: _currentCategory, // category yang sedang dipilih
+                activeColor: const Color(0xFFD9614C), // warna saat dipilih
                 onChanged: (v) {
-                  setState(() => _currentCategory = v!);
-                  widget.onCategorySelected(v!);
-                  Navigator.pop(context);
+                  setState(() => _currentCategory = v!); // update category
+                  widget.onCategorySelected(v!); // kirim ke parent
+                  Navigator.pop(context); // tutup drawer
                 },
               );
             }).toList(),

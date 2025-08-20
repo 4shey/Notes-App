@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_notes_app/models/note.dart';
+import 'package:flutter_notes_app/screens/edit_note_screen.dart';
 import 'package:flutter_notes_app/screens/home_screen.dart';
 import 'package:flutter_notes_app/screens/todo_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BottomNavbar extends StatefulWidget {
   const BottomNavbar({super.key});
@@ -12,6 +15,9 @@ class BottomNavbar extends StatefulWidget {
 class _BottomNavbarState extends State<BottomNavbar> {
   int _currentIndex = 0;
   late PageController _pageController;
+  List<Note> notes = [];
+
+  bool isLoading = true;
 
   final List<Widget> _pages = [
     const HomeScreen(key: ValueKey('home')),
@@ -22,6 +28,48 @@ class _BottomNavbarState extends State<BottomNavbar> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _currentIndex);
+  }
+
+  Future<void> _openEditNoteScreen({Note? note, int? index}) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            EditNoteScreen(existingNote: note, noteIndex: index),
+      ),
+    );
+
+    if (result != null && result is Map<String, dynamic>) {
+      final action = result['action'];
+
+      setState(() {
+        if (action == 'deleted' && index != null) {
+          notes.removeAt(index);
+        } else if (action == 'saved') {
+          _loadNotesFromPrefs();
+        }
+      });
+      _saveNotesToPrefs();
+    }
+  }
+
+  Future<void> _loadNotesFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final notesStringList = prefs.getStringList('notes') ?? [];
+    final loadedNotes = notesStringList
+        .map((str) => Note.fromJson(str))
+        .toList();
+
+    setState(() {
+      notes = loadedNotes;
+      isLoading = false;
+    });
+  }
+
+  Future<void> _saveNotesToPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final notesStringList = notes.map((n) => n.toJson()).toList();
+    await prefs.setStringList('notes', notesStringList);
   }
 
   @override
@@ -44,7 +92,7 @@ class _BottomNavbarState extends State<BottomNavbar> {
       ),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: const Color.fromARGB(255, 255, 255, 255),
+          color: Colors.white,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
@@ -53,7 +101,7 @@ class _BottomNavbarState extends State<BottomNavbar> {
             ),
           ],
         ),
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 40),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
@@ -86,7 +134,7 @@ class _BottomNavbarState extends State<BottomNavbar> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           color: isActive
-              ? Color(0xFFD9614C).withOpacity(0.2)
+              ? const Color(0xFFD9614C).withOpacity(0.2)
               : Colors.transparent,
         ),
         child: Column(
@@ -97,7 +145,9 @@ class _BottomNavbarState extends State<BottomNavbar> {
               child: Icon(
                 isActive ? activeIcon : icon,
                 key: ValueKey(isActive),
-                color: Color(0xFFD9614C).withOpacity(isActive ? 1.0 : 0.5),
+                color: const Color(
+                  0xFFD9614C,
+                ).withOpacity(isActive ? 1.0 : 0.5),
                 size: isActive ? 28 : 24,
               ),
             ),
@@ -105,7 +155,9 @@ class _BottomNavbarState extends State<BottomNavbar> {
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 250),
               style: TextStyle(
-                color: Color(0xFFD9614C).withOpacity(isActive ? 1.0 : 0.5),
+                color: const Color(
+                  0xFFD9614C,
+                ).withOpacity(isActive ? 1.0 : 0.5),
                 fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
                 fontSize: 12,
               ),

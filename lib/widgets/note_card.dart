@@ -49,7 +49,34 @@ class NoteCard extends StatelessWidget {
                   favorite ? Icons.star : Icons.star_border,
                   color: favorite ? Colors.yellow[700] : Colors.grey,
                 ),
-                onPressed: onFavoriteToggle,
+                onPressed: () {
+                  // jalankan callback toggle favorit
+                  if (onFavoriteToggle != null) {
+                    onFavoriteToggle!();
+                  }
+
+                  // tampilkan snackbar dengan style seragam
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        favorite
+                            ? "Removed from favorites"
+                            : "Added to favorites",
+                        style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+                      ),
+                      backgroundColor: const Color(0xFFD9614C),
+                      duration: const Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                  );
+                },
               ),
             ],
           ),

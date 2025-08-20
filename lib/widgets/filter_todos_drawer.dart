@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class FilterDrawerTodo extends StatefulWidget {
-  final String statusFilter;
-  final String categoryFilter;
-  final Function(String) onStatusSelected;
-  final Function(String) onCategorySelected;
+  final String statusFilter; // filter status awal
+  final String categoryFilter; // filter category awal
+  final Function(String) onStatusSelected; // callback status ke parent
+  final Function(String) onCategorySelected; // callback category ke parent
 
   const FilterDrawerTodo({
     super.key,
@@ -20,15 +20,19 @@ class FilterDrawerTodo extends StatefulWidget {
 }
 
 class _FilterDrawerTodoState extends State<FilterDrawerTodo> {
-  late String _status;
-  late String _category;
-  final List<String> _categories = ['personal', 'school', 'work'];
+  late String _status; // status yang dipilih saat ini
+  late String _category; // category yang dipilih saat ini
+  final List<String> _categories = [
+    'personal',
+    'school',
+    'work',
+  ]; // daftar category
 
   @override
   void initState() {
     super.initState();
-    _status = widget.statusFilter;
-    _category = widget.categoryFilter;
+    _status = widget.statusFilter; // set status awal
+    _category = widget.categoryFilter; // set category awal
   }
 
   @override
@@ -39,6 +43,7 @@ class _FilterDrawerTodoState extends State<FilterDrawerTodo> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
+            // Header Drawer
             DrawerHeader(
               decoration: const BoxDecoration(color: Color(0xFFD9614C)),
               child: Align(
@@ -53,7 +58,8 @@ class _FilterDrawerTodoState extends State<FilterDrawerTodo> {
                 ),
               ),
             ),
-            // Status Filter
+
+            // ===== Status Filter =====
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               child: Text(
@@ -61,30 +67,45 @@ class _FilterDrawerTodoState extends State<FilterDrawerTodo> {
                 style: GoogleFonts.nunito(fontWeight: FontWeight.w900),
               ),
             ),
+            // pilihan All
             RadioListTile<String>(
-              title: const Text('All'),
+              title: Text(
+                'All',
+                style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+              ),
               value: 'all',
               groupValue: _status,
+              activeColor: const Color(0xFFD9614C),
               onChanged: (v) {
                 setState(() => _status = v!);
                 widget.onStatusSelected(v!);
                 Navigator.pop(context);
               },
             ),
+            // pilihan Completed
             RadioListTile<String>(
-              title: const Text('Completed'),
+              title: Text(
+                'Completed',
+                style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+              ),
               value: 'completed',
               groupValue: _status,
+              activeColor: const Color(0xFFD9614C),
               onChanged: (v) {
                 setState(() => _status = v!);
                 widget.onStatusSelected(v!);
                 Navigator.pop(context);
               },
             ),
+            // pilihan Pending
             RadioListTile<String>(
-              title: const Text('Pending'),
+              title: Text(
+                'Pending',
+                style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+              ),
               value: 'pending',
               groupValue: _status,
+              activeColor: const Color(0xFFD9614C),
               onChanged: (v) {
                 setState(() => _status = v!);
                 widget.onStatusSelected(v!);
@@ -93,7 +114,7 @@ class _FilterDrawerTodoState extends State<FilterDrawerTodo> {
             ),
             const Divider(height: 24),
 
-            // Category Filter
+            // ===== Category Filter =====
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               child: Text(
@@ -101,21 +122,31 @@ class _FilterDrawerTodoState extends State<FilterDrawerTodo> {
                 style: GoogleFonts.nunito(fontWeight: FontWeight.w900),
               ),
             ),
+            // pilihan All category
             RadioListTile<String>(
-              title: const Text('All'),
+              title: Text(
+                'All',
+                style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+              ),
               value: 'all',
               groupValue: _category,
+              activeColor: const Color(0xFFD9614C),
               onChanged: (v) {
                 setState(() => _category = v!);
                 widget.onCategorySelected(v!);
                 Navigator.pop(context);
               },
             ),
+            // pilihan category dari list _categories
             ..._categories.map(
               (c) => RadioListTile<String>(
-                title: Text(c[0].toUpperCase() + c.substring(1)),
+                title: Text(
+                  c[0].toUpperCase() + c.substring(1),
+                  style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+                ),
                 value: c,
                 groupValue: _category,
+                activeColor: const Color(0xFFD9614C),
                 onChanged: (v) {
                   setState(() => _category = v!);
                   widget.onCategorySelected(v!);
@@ -123,6 +154,7 @@ class _FilterDrawerTodoState extends State<FilterDrawerTodo> {
                 },
               ),
             ),
+
             const SizedBox(height: 12),
           ],
         ),
