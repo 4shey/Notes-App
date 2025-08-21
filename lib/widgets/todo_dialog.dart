@@ -88,7 +88,13 @@ class _ToDoDialogState extends State<ToDoDialog> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const SizedBox(height: 24),
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ),
                     Text(
                       widget.existing == null ? 'Add ToDo' : 'Edit ToDo',
                       style: GoogleFonts.nunito(
@@ -177,7 +183,6 @@ class _ToDoDialogState extends State<ToDoDialog> {
                                     ),
                                     content: Text(
                                       'Are you sure you want to delete "${widget.todosTitle}"',
-                                      style: const TextStyle(fontSize: 16),
                                     ),
                                     actionsPadding: const EdgeInsets.symmetric(
                                       horizontal: 16,
@@ -187,7 +192,7 @@ class _ToDoDialogState extends State<ToDoDialog> {
                                       OutlinedButton(
                                         style: OutlinedButton.styleFrom(
                                           side: const BorderSide(
-                                            color: Colors.grey,
+                                            color: Colors.black,
                                           ),
                                           shape: RoundedRectangleBorder(
                                             borderRadius: BorderRadius.circular(
@@ -199,7 +204,7 @@ class _ToDoDialogState extends State<ToDoDialog> {
                                             Navigator.pop(context, false),
                                         child: const Text(
                                           'Cancel',
-                                          style: TextStyle(color: Colors.grey),
+                                          style: TextStyle(color: Colors.black),
                                         ),
                                       ),
                                       ElevatedButton(
@@ -268,14 +273,6 @@ class _ToDoDialogState extends State<ToDoDialog> {
                   ],
                 ),
               ),
-            ),
-          ),
-          Positioned(
-            right: 8,
-            top: 8,
-            child: IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () => Navigator.pop(context),
             ),
           ),
         ],

@@ -1,8 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/provider/note_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../models/note.dart';
+
+OverlayEntry? _activeToast;
+Timer? _toastTimer;
 
 class EditNoteScreen extends StatefulWidget {
   final Note? existingNote;
@@ -14,9 +19,58 @@ class EditNoteScreen extends StatefulWidget {
   State<EditNoteScreen> createState() => _EditNoteScreenState();
 }
 
+void showTopToast(BuildContext context, String message) {
+  final overlay = Overlay.of(context);
+
+  _toastTimer?.cancel();
+  _activeToast?.remove();
+
+  _activeToast = OverlayEntry(
+    builder: (context) => Positioned(
+      top: MediaQuery.of(context).padding.top + 16,
+      left: 20,
+      right: 20,
+      child: Material(
+        color: Colors.transparent,
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFD9614C),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 6,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  overlay.insert(_activeToast!);
+
+  _toastTimer = Timer(const Duration(milliseconds: 1500), () {
+    _activeToast?.remove();
+    _activeToast = null;
+  });
+}
+
 class _EditNoteScreenState extends State<EditNoteScreen> {
   final TextEditingController titleController = TextEditingController();
   final TextEditingController contentController = TextEditingController();
+  final FocusNode _titleFocusNode = FocusNode(); // Focus node untuk title
   String? selectedCategory;
 
   @override
@@ -29,6 +83,17 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
     } else {
       selectedCategory = "personal";
     }
+
+    // Auto fokus title saat halaman dibuka
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).requestFocus(_titleFocusNode);
+    });
+  }
+
+  @override
+  void dispose() {
+    _titleFocusNode.dispose();
+    super.dispose();
   }
 
   @override
@@ -79,18 +144,29 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                           Text('Confirm Delete'),
                         ],
                       ),
-                     content: Text('Are you sure you want to delete "${widget.existingNote?.title}"?'),
+                      content: Text(
+                        'Are you sure you want to delete "${widget.existingNote?.title}"?',
+                      ),
                       actions: [
                         OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Colors.black),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
                           onPressed: () => Navigator.pop(context, false),
                           child: const Text(
                             "Cancel",
-                            style: TextStyle(color: Colors.grey),
+                            style: TextStyle(color: Colors.black),
                           ),
                         ),
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Color(0xFFD9614C),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                           ),
                           onPressed: () => Navigator.pop(context, true),
                           child: const Text(
@@ -125,6 +201,7 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
             children: [
               TextField(
                 controller: titleController,
+                focusNode: _titleFocusNode, // pasang focus node
                 style: GoogleFonts.nunito(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -173,12 +250,7 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
 
             Navigator.pop(context);
           } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text("Please fill out all fields"),
-                backgroundColor: Color(0xFFD9614C),
-              ),
-            );
+            showTopToast(context, "Please fill out all fields");
           }
         },
         child: const Icon(Icons.check, color: Colors.white),

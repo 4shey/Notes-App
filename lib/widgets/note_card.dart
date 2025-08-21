@@ -1,6 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../models/note.dart';
+
+OverlayEntry? _activeToast; 
+Timer? _toastTimer;
 
 class NoteCard extends StatelessWidget {
   final Note note;
@@ -13,6 +18,56 @@ class NoteCard extends StatelessWidget {
     required this.favorite,
     this.onFavoriteToggle,
   });
+  
+void showTopToast(BuildContext context, String message) {
+  final overlay = Overlay.of(context);
+
+  _toastTimer?.cancel();
+  _activeToast?.remove();
+
+  _activeToast = OverlayEntry(
+    builder: (context) => Positioned(
+      top: MediaQuery.of(context).padding.top + 16,
+      left: 20,
+      right: 20,
+      child: Material(
+        color: Colors.transparent,
+        child: Center(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFD9614C),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 6,
+                  offset: Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Text(
+              message,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  overlay.insert(_activeToast!);
+
+  // auto remove setelah 1.5 detik
+  _toastTimer = Timer(const Duration(milliseconds: 1500), () {
+    _activeToast?.remove();
+    _activeToast = null;
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -54,25 +109,11 @@ class NoteCard extends StatelessWidget {
                     onFavoriteToggle!();
                   }
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        favorite
-                            ? "Removed \"${note.title}\" from favorites"
-                            : "Added \"${note.title}\" to favorites",
-                        style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
-                      ),
-                      backgroundColor: const Color(0xFFD9614C),
-                      duration: const Duration(seconds: 1),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                    ),
+                  showTopToast(
+                    context,
+                    favorite
+                        ? "Removed \"${note.title}\" from favorites"
+                        : "Added \"${note.title}\" to favorites",
                   );
                 },
               ),

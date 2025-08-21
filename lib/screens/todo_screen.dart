@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/provider/todo_provider.dart';
+import 'package:flutter_notes_app/screens/home_screen.dart';
 import 'package:flutter_notes_app/widgets/empty_search.dart';
 import 'package:flutter_notes_app/widgets/empty_state.dart';
 import 'package:flutter_notes_app/widgets/filter_todos_drawer.dart';
@@ -8,6 +9,8 @@ import 'package:flutter_notes_app/widgets/todo_dialog.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+final GlobalKey<_ToDoScreenState> toDoScreenKey = GlobalKey<_ToDoScreenState>();
+
 class ToDoScreen extends StatefulWidget {
   const ToDoScreen({super.key});
 
@@ -15,7 +18,8 @@ class ToDoScreen extends StatefulWidget {
   State<ToDoScreen> createState() => _ToDoScreenState();
 }
 
-class _ToDoScreenState extends State<ToDoScreen> {
+class _ToDoScreenState extends State<ToDoScreen>
+    with AutomaticKeepAliveClientMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   String _statusFilter = 'all';
@@ -25,6 +29,9 @@ class _ToDoScreenState extends State<ToDoScreen> {
 
   static const _categories = ['personal', 'school', 'work'];
 
+  @override
+  bool get wantKeepAlive => true; // ✅ otomatis simpan state scroll
+
   void _closeSearch() {
     setState(() {
       _searchActive = false;
@@ -32,20 +39,39 @@ class _ToDoScreenState extends State<ToDoScreen> {
     });
   }
 
+  final List<Widget> _pages = [
+    HomeScreen(key: homeScreenKey),
+    ToDoScreen(key: toDoScreenKey),
+  ];
+
+  void closeSearchAndDrawer() {
+    if (_searchActive) {
+      setState(() {
+        _searchActive = false;
+        _searchQuery = "";
+      });
+    }
+    if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
+      Navigator.of(context).pop(); // tutup drawer
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    // load todos via provider
-    final provider = Provider.of<ToDoProvider>(context, listen: false);
-    provider.loadTodos();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<ToDoProvider>(context, listen: false).loadTodos();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // ✅ wajib kalau pakai AutomaticKeepAliveClientMixin
     const double topPadding = 18;
     const double horizontalPadding = 20;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       key: _scaffoldKey,
       backgroundColor: const Color(0xFFF8EEE2),
       drawer: _searchActive
@@ -63,12 +89,11 @@ class _ToDoScreenState extends State<ToDoScreen> {
       body: SafeArea(
         child: GestureDetector(
           behavior: HitTestBehavior.translucent,
-          onTap: () {
-            if (_searchActive) _closeSearch();
-          },
+          onTap: () => FocusScope.of(context).unfocus(),
           child: Column(
             children: [
               const SizedBox(height: topPadding),
+              // 🔍 Header search / filter
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: horizontalPadding,
@@ -153,6 +178,8 @@ class _ToDoScreenState extends State<ToDoScreen> {
                 ),
               ),
               const SizedBox(height: 12),
+
+              // ✅ LIST TODOS
               Expanded(
                 child: Consumer<ToDoProvider>(
                   builder: (context, provider, _) {
@@ -161,11 +188,17 @@ class _ToDoScreenState extends State<ToDoScreen> {
 
                     for (var i = 0; i < todos.length; i++) {
                       final t = todos[i];
-                      if (_statusFilter == 'completed' && !t.isCompleted) continue;
+                      if (_statusFilter == 'completed' && !t.isCompleted)
+                        continue;
                       if (_statusFilter == 'pending' && t.isCompleted) continue;
-                      if (_categoryFilter != 'all' && t.category != _categoryFilter) continue;
+                      if (_categoryFilter != 'all' &&
+                          t.category != _categoryFilter)
+                        continue;
                       if (_searchQuery.isNotEmpty &&
-                          !t.title.toLowerCase().contains(_searchQuery.toLowerCase())) continue;
+                          !t.title.toLowerCase().contains(
+                            _searchQuery.toLowerCase(),
+                          ))
+                        continue;
                       displayIndices.add(i);
                     }
 
@@ -186,7 +219,14 @@ class _ToDoScreenState extends State<ToDoScreen> {
                     }
 
                     return ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: horizontalPadding),
+                      key: const PageStorageKey(
+                        "todosList",
+                      ), // ✅ biar auto simpan posisi
+                      padding: const EdgeInsets.only(
+                        bottom: 10,
+                        left: horizontalPadding,
+                        right: horizontalPadding,
+                      ),
                       itemCount: displayIndices.length,
                       itemBuilder: (context, idx) {
                         final index = displayIndices[idx];

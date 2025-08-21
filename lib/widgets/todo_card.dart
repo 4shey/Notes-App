@@ -1,8 +1,12 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/models/todo.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class ToDoCard extends StatelessWidget {
+OverlayEntry? _activeToast;
+Timer? _toastTimer;
+
+class ToDoCard extends StatefulWidget {
   final ToDoItem todo;
   final ValueChanged<bool?> onChanged;
   final VoidCallback onTap;
@@ -13,6 +17,55 @@ class ToDoCard extends StatelessWidget {
     required this.onChanged,
     required this.onTap,
   });
+
+  @override
+  State<ToDoCard> createState() => _ToDoCardState();
+}
+
+class _ToDoCardState extends State<ToDoCard> {
+  bool _hovered = false;
+  bool _pressed = false;
+
+  void showTopToast(BuildContext context, String message) {
+    final overlay = Overlay.of(context);
+
+    _toastTimer?.cancel();
+    _activeToast?.remove();
+
+    _activeToast = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).padding.top + 16,
+        left: 20,
+        right: 20,
+        child: Material(
+          color: Colors.transparent,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFD9614C),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                message,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(_activeToast!);
+
+    _toastTimer = Timer(const Duration(milliseconds: 1500), () {
+      _activeToast?.remove();
+      _activeToast = null;
+    });
+  }
 
   Color _chipColor(String category) {
     switch (category) {
@@ -38,117 +91,102 @@ class ToDoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: todo.isCompleted ? Colors.green[50] : Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 6,
-              offset: const Offset(0, 3),
-            ),
-          ],
-          border: Border.all(
-            color: todo.isCompleted
-                ? Colors.green.withOpacity(0.3)
-                : Colors.transparent,
-          ),
-        ),
-        child: Row(
-          children: [
-            Checkbox(
-              value: todo.isCompleted,
-              onChanged: (value) {
-                onChanged(value);
+    Color borderColor = widget.todo.isCompleted
+        ? Colors.green.withOpacity(0.4)
+        : Colors.grey;
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      value == true
-                          ? "Task \"${todo.title}\" completed"
-                          : "Task \"${todo.title}\" marked incomplete",
-                      style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
-                    ),
-                    backgroundColor: const Color(0xFFD9614C),
-                    duration: const Duration(seconds: 1),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                  ),
-                );
-              },
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(4),
+    if (_hovered || _pressed) {
+      borderColor = const Color(0xFFD9614C);
+    }
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: GestureDetector(
+        onTapDown: (_) => setState(() => _pressed = true),
+        onTapUp: (_) => setState(() => _pressed = false),
+        onTapCancel: () => setState(() => _pressed = false),
+        onTap: widget.onTap,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: widget.todo.isCompleted ? Colors.green[50] : Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor, width: 1.4),
+          ),
+          child: Row(
+            children: [
+              Checkbox(
+                value: widget.todo.isCompleted,
+                onChanged: (value) {
+                  widget.onChanged(value);
+                  showTopToast(
+                    context,
+                    value == true
+                        ? "Task \"${widget.todo.title}\" completed"
+                        : "Task \"${widget.todo.title}\" marked incomplete",
+                  );
+                },
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(4),
+                ),
               ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Title
-                  Text(
-                    todo.title,
-                    style: GoogleFonts.nunito(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      decoration: todo.isCompleted
-                          ? TextDecoration.lineThrough
-                          : null,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  // Description
-                  if ((todo.description ?? '').isNotEmpty) ...[
-                    const SizedBox(height: 6),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      todo.description!,
+                      widget.todo.title,
                       style: GoogleFonts.nunito(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[700],
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                  const SizedBox(height: 10),
-                  // Category chip
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: _chipColor(todo.category),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      _categoryLabel(todo.category),
-                      style: GoogleFonts.nunito(
-                        fontSize: 12,
+                        fontSize: 18,
                         fontWeight: FontWeight.w800,
+                        decoration: widget.todo.isCompleted
+                            ? TextDecoration.lineThrough
+                            : null,
                         color: Colors.black87,
                       ),
                     ),
-                  ),
-                ],
+                    if ((widget.todo.description ?? '').isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        widget.todo.description!,
+                        style: GoogleFonts.nunito(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey[700],
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _chipColor(widget.todo.category),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        _categoryLabel(widget.todo.category),
+                        style: GoogleFonts.nunito(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            Icon(Icons.chevron_right, color: Colors.grey[600]),
-          ],
+              const SizedBox(width: 8),
+              Icon(Icons.chevron_right, color: Colors.grey[600]),
+            ],
+          ),
         ),
       ),
     );

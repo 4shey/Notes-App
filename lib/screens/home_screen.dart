@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/models/note.dart';
 import 'package:flutter_notes_app/provider/note_provider.dart';
 import 'package:flutter_notes_app/screens/edit_note_screen.dart';
+import 'package:flutter_notes_app/screens/todo_screen.dart';
 import 'package:flutter_notes_app/widgets/empty_search.dart';
 import 'package:flutter_notes_app/widgets/empty_state.dart';
 import 'package:flutter_notes_app/widgets/filter_notes_drawer.dart';
@@ -10,6 +11,8 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+final GlobalKey<_HomeScreenState> homeScreenKey = GlobalKey<_HomeScreenState>();
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -17,7 +20,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with AutomaticKeepAliveClientMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   String selectedCategory = "all";
@@ -25,6 +29,9 @@ class _HomeScreenState extends State<HomeScreen> {
   bool searchActive = false;
 
   Size? _screenSize;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -44,7 +51,6 @@ class _HomeScreenState extends State<HomeScreen> {
             EditNoteScreen(existingNote: note, noteIndex: index),
       ),
     );
-    // Tidak perlu setState, provider akan rebuild otomatis
   }
 
   List<Note> filteredNotes(List<Note> notes) {
@@ -79,14 +85,30 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  /// ⚡ Auto-close search & drawer
+  void closeSearchAndDrawer() {
+    if (searchActive) {
+      setState(() {
+        searchActive = false;
+        searchQuery = "";
+      });
+    }
+    if (_scaffoldKey.currentState?.isDrawerOpen ?? false) {
+      _scaffoldKey.currentState?.openEndDrawer();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     final noteProvider = context.watch<NoteProvider>();
     final notes = noteProvider.notes;
     final displayedNotes = filteredNotes(notes);
 
     return Scaffold(
       key: _scaffoldKey,
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFFF8EEE2),
       drawer: searchActive
           ? null
@@ -103,9 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: GestureDetector(
           behavior: HitTestBehavior.translucent,
-          onTap: () {
-            if (searchActive) _closeSearch();
-          },
+          onTap: () => FocusScope.of(context).unfocus(),
           child: LayoutBuilder(
             builder: (context, constraints) {
               return Column(
@@ -193,51 +213,86 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 12),
                   Expanded(
-                    child: notes.isEmpty
-                        ? EmptyDataWidget(
-                            title: 'No Notes yet',
-                            subtitle: 'Tap the + button to add your note.',
-                            screenSize: _screenSize ?? const Size(0, 0),
-                          )
-                        : displayedNotes.isEmpty
-                        ? searchActive && searchQuery.isNotEmpty
+                    child: Builder(
+                      builder: (_) {
+                        if (searchActive && searchQuery.isNotEmpty) {
+                          return displayedNotes.isEmpty
                               ? Center(
                                   child: EmptySearchWidget(query: searchQuery),
                                 )
-                              : EmptyDataWidget(
+                              : Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
+                                  ),
+                                  child: MasonryGridView.count(
+                                    crossAxisCount: 2,
+                                    mainAxisSpacing: 12,
+                                    crossAxisSpacing: 12,
+                                    padding: const EdgeInsets.only(bottom: 20),
+                                    itemCount: displayedNotes.length,
+                                    itemBuilder: (context, index) {
+                                      final note = displayedNotes[index];
+                                      final originalIndex = notes.indexOf(note);
+                                      return GestureDetector(
+                                        onTap: () => _openEditNoteScreen(
+                                          note: note,
+                                          index: originalIndex,
+                                        ),
+                                        child: NoteCard(
+                                          note: note,
+                                          favorite: note.favorite,
+                                          onFavoriteToggle: () {
+                                            noteProvider.toggleFavorite(
+                                              originalIndex,
+                                            );
+                                          },
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                        } else {
+                          return notes.isEmpty
+                              ? EmptyDataWidget(
                                   title: 'No Notes yet',
                                   subtitle:
                                       'Tap the + button to add your note.',
                                   screenSize: _screenSize ?? const Size(0, 0),
                                 )
-                        : Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 20),
-                            child: MasonryGridView.count(
-                              crossAxisCount: 2,
-                              mainAxisSpacing: 12,
-                              crossAxisSpacing: 12,
-                              itemCount: displayedNotes.length,
-                              itemBuilder: (context, index) {
-                                final note = displayedNotes[index];
-                                final originalIndex = notes.indexOf(note);
-                                return GestureDetector(
-                                  onTap: () => _openEditNoteScreen(
-                                    note: note,
-                                    index: originalIndex,
+                              : Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
                                   ),
-                                  child: NoteCard(
-                                    note: note,
-                                    favorite: note.favorite,
-                                    onFavoriteToggle: () {
-                                      noteProvider.toggleFavorite(
-                                        originalIndex,
+                                  child: MasonryGridView.count(
+                                    crossAxisCount: 2,
+                                    mainAxisSpacing: 12,
+                                    crossAxisSpacing: 12,
+                                    padding: const EdgeInsets.only(bottom: 20),
+                                    itemCount: displayedNotes.length,
+                                    itemBuilder: (context, index) {
+                                      final note = displayedNotes[index];
+                                      final originalIndex = notes.indexOf(note);
+                                      return GestureDetector(
+                                        onTap: () => _openEditNoteScreen(
+                                          note: note,
+                                          index: originalIndex,
+                                        ),
+                                        child: NoteCard(
+                                          note: note,
+                                          favorite: note.favorite,
+                                          onFavoriteToggle: () {
+                                            noteProvider.toggleFavorite(
+                                              originalIndex,
+                                            );
+                                          },
+                                        ),
                                       );
                                     },
                                   ),
                                 );
-                              },
-                            ),
-                          ),
+                        }
+                      },
+                    ),
                   ),
                 ],
               );

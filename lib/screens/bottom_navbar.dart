@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/models/note.dart';
 import 'package:flutter_notes_app/provider/todo_provider.dart';
@@ -25,7 +26,10 @@ class _BottomNavbarState extends State<BottomNavbar> {
 
   static const _categories = ['personal', 'school', 'work'];
 
-  final List<Widget> _pages = [HomeScreen(), ToDoScreen()];
+  final List<Widget> _pages = [
+    HomeScreen(key: homeScreenKey),
+    ToDoScreen(key: toDoScreenKey),
+  ];
 
   @override
   void initState() {
@@ -78,8 +82,12 @@ class _BottomNavbarState extends State<BottomNavbar> {
 
   void _onFabPressed() {
     if (_currentIndex == 0) {
+      homeScreenKey.currentState
+          ?.closeSearchAndDrawer(); // ✅ tutup search & drawer
       _openEditNoteScreen();
     } else if (_currentIndex == 1) {
+      toDoScreenKey.currentState
+          ?.closeSearchAndDrawer(); // ✅ tutup search & drawer
       showDialog(
         context: context,
         builder: (_) => ToDoDialog(
@@ -110,15 +118,20 @@ class _BottomNavbarState extends State<BottomNavbar> {
           setState(() {
             _currentIndex = index;
           });
+          if (index == 0) {
+            homeScreenKey.currentState?.closeSearchAndDrawer(); // ✅
+          } else if (index == 1) {
+            toDoScreenKey.currentState?.closeSearchAndDrawer(); // ✅
+          }
         },
       ),
       bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
+        shape: SmoothVNotched(),
         notchMargin: 8,
-        elevation: 8,
+        elevation: 0,
         color: Colors.white,
         child: SizedBox(
-          height: 65,
+          height: 70,
           child: Row(
             children: [
               Expanded(
@@ -129,7 +142,7 @@ class _BottomNavbarState extends State<BottomNavbar> {
                   0,
                 ),
               ),
-              const Spacer(),
+              const Spacer(flex: 1), // ruang di tengah untuk FAB
               Expanded(
                 child: _buildNavItem(
                   Icons.list_alt_outlined,
@@ -142,13 +155,26 @@ class _BottomNavbarState extends State<BottomNavbar> {
           ),
         ),
       ),
-      floatingActionButton: SizedBox(
+      floatingActionButton: Container(
         width: 70,
         height: 70,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: mainColor,
+          boxShadow: [
+            BoxShadow(
+              color: mainColor.withOpacity(0.4),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
         child: FloatingActionButton(
           backgroundColor: mainColor,
-          shape: const CircleBorder(),
+          elevation: 0,
+          highlightElevation: 0,
           onPressed: _onFabPressed,
+          shape: const CircleBorder(),
           child: const Icon(Icons.add, size: 32, color: Colors.white),
         ),
       ),
@@ -163,13 +189,25 @@ class _BottomNavbarState extends State<BottomNavbar> {
     int index,
   ) {
     bool isActive = _currentIndex == index;
-    return GestureDetector(
+
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
       onTap: () {
-        _pageController.animateToPage(
-          index,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
+        if (_currentIndex != index) {
+          // 🔹 tutup search & drawer sebelum pindah tab
+          if (_currentIndex == 0) {
+            homeScreenKey.currentState?.closeSearchAndDrawer();
+          } else if (_currentIndex == 1) {
+            toDoScreenKey.currentState?.closeSearchAndDrawer();
+          }
+
+          // 🔹 pindah halaman
+          _pageController.animateToPage(
+            index,
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOut,
+          );
+        }
       },
       child: SizedBox(
         height: double.infinity,
@@ -194,5 +232,52 @@ class _BottomNavbarState extends State<BottomNavbar> {
         ),
       ),
     );
+  }
+}
+
+class SmoothVNotched extends NotchedShape {
+  final double notchWidth; // lebar lekukan
+  final double notchDepth; // kedalaman lekukan
+
+  SmoothVNotched({this.notchWidth = 60, this.notchDepth = 20});
+
+  @override
+  Path getOuterPath(Rect host, Rect? guest) {
+    if (guest == null || !host.overlaps(guest)) {
+      return Path()..addRect(host);
+    }
+
+    final path = Path();
+    path.moveTo(host.left, host.top);
+
+    final centerX = guest.center.dx;
+    final halfWidth = notchWidth / 2;
+
+    // garis horizontal kiri sebelum lekukan
+    path.lineTo(centerX - halfWidth, host.top);
+
+    // garis miring kiri turun halus
+    path.quadraticBezierTo(
+      centerX - halfWidth / 2,
+      host.top,
+      centerX,
+      host.top + notchDepth,
+    );
+
+    // garis miring kanan naik halus
+    path.quadraticBezierTo(
+      centerX + halfWidth / 2,
+      host.top,
+      centerX + halfWidth,
+      host.top,
+    );
+
+    // garis horizontal kanan
+    path.lineTo(host.right, host.top);
+    path.lineTo(host.right, host.bottom);
+    path.lineTo(host.left, host.bottom);
+    path.close();
+
+    return path;
   }
 }
