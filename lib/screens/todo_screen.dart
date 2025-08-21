@@ -58,6 +58,14 @@ class _ToDoScreenState extends State<ToDoScreen>
     });
   }
 
+  String _getHeaderTitle() {
+    if (_statusFilter == 'completed') return 'Completed ToDos';
+    if (_statusFilter == 'pending') return 'Pending ToDos';
+    // status all
+    if (_categoryFilter == 'all') return 'All ToDos';
+    return '${_categoryFilter[0].toUpperCase()}${_categoryFilter.substring(1)} ToDos';
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -113,13 +121,7 @@ class _ToDoScreenState extends State<ToDoScreen>
                         child: !_searchActive
                             ? Center(
                                 child: Text(
-                                  _statusFilter == "all"
-                                      ? (_categoryFilter == 'all'
-                                            ? 'All ToDos'
-                                            : '${_categoryFilter[0].toUpperCase()}${_categoryFilter.substring(1)} ToDos')
-                                      : _statusFilter == "completed"
-                                      ? 'Completed ToDos'
-                                      : 'Pending ToDos',
+                                  _getHeaderTitle(),
                                   style: GoogleFonts.nunito(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w900,
@@ -171,7 +173,6 @@ class _ToDoScreenState extends State<ToDoScreen>
                 ),
               ),
               const SizedBox(height: 12),
-
               Expanded(
                 child: Consumer<ToDoProvider>(
                   builder: (context, provider, _) {
@@ -182,14 +183,12 @@ class _ToDoScreenState extends State<ToDoScreen>
                       final t = todos[i];
                       if (_statusFilter == 'completed' && !t.isCompleted)
                         continue;
-                      if (_statusFilter == 'pending' && t.isCompleted) continue;
-                      if (_categoryFilter != 'all' &&
-                          t.category != _categoryFilter)
+                      if (_statusFilter == 'pending' && t.isCompleted)
+                        continue;
+                      if (_categoryFilter != 'all' && t.category != _categoryFilter)
                         continue;
                       if (_searchQuery.isNotEmpty &&
-                          !t.title.toLowerCase().contains(
-                            _searchQuery.toLowerCase(),
-                          ))
+                          !t.title.toLowerCase().contains(_searchQuery.toLowerCase()))
                         continue;
                       displayIndices.add(i);
                     }
@@ -198,22 +197,33 @@ class _ToDoScreenState extends State<ToDoScreen>
                       return const Center(child: CircularProgressIndicator());
                     }
 
+                    // logika empty sesuai permintaan
                     if (displayIndices.isEmpty) {
-                      return Center(
-                        child: _searchActive && _searchQuery.isNotEmpty
-                            ? EmptySearchWidget(query: _searchQuery)
-                            : EmptyDataWidget(
-                                title: 'No ToDos yet',
-                                subtitle: 'Tap "+" to add your todos.',
-                                screenSize: MediaQuery.of(context).size,
-                              ),
-                      );
+                      if (_searchActive && _searchQuery.isNotEmpty) {
+                        return Center(
+                          child: EmptySearchWidget(query: _searchQuery),
+                        );
+                      } else if (_categoryFilter != 'all' || _statusFilter != 'all') {
+                        return Center(
+                          child: EmptyDataWidget(
+                            title: 'No ToDos',
+                            subtitle: 'No todos found for your filter.',
+                            screenSize: MediaQuery.of(context).size,
+                          ),
+                        );
+                      } else if (todos.isEmpty) {
+                        return Center(
+                          child: EmptyDataWidget(
+                            title: 'No ToDos yet',
+                            subtitle: 'Tap "+" to add your todos.',
+                            screenSize: MediaQuery.of(context).size,
+                          ),
+                        );
+                      }
                     }
 
                     return ListView.builder(
-                      key: const PageStorageKey(
-                        "todosList",
-                      ),
+                      key: const PageStorageKey("todosList"),
                       padding: const EdgeInsets.only(
                         bottom: 10,
                         left: horizontalPadding,
