@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/provider/todo_provider.dart';
-import 'package:flutter_notes_app/screens/home_screen.dart';
 import 'package:flutter_notes_app/widgets/empty_search.dart';
 import 'package:flutter_notes_app/widgets/empty_state.dart';
 import 'package:flutter_notes_app/widgets/filter_todos_drawer.dart';
@@ -30,7 +29,7 @@ class _ToDoScreenState extends State<ToDoScreen>
   static const _categories = ['personal', 'school', 'work'];
 
   @override
-  bool get wantKeepAlive => true; // ✅ otomatis simpan state scroll
+  bool get wantKeepAlive => true;
 
   void _closeSearch() {
     setState(() {
@@ -38,11 +37,6 @@ class _ToDoScreenState extends State<ToDoScreen>
       _searchQuery = '';
     });
   }
-
-  final List<Widget> _pages = [
-    HomeScreen(key: homeScreenKey),
-    ToDoScreen(key: toDoScreenKey),
-  ];
 
   void closeSearchAndDrawer() {
     if (_searchActive) {
@@ -66,7 +60,7 @@ class _ToDoScreenState extends State<ToDoScreen>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // ✅ wajib kalau pakai AutomaticKeepAliveClientMixin
+    super.build(context);
     const double topPadding = 18;
     const double horizontalPadding = 20;
 
@@ -93,7 +87,6 @@ class _ToDoScreenState extends State<ToDoScreen>
           child: Column(
             children: [
               const SizedBox(height: topPadding),
-              // 🔍 Header search / filter
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: horizontalPadding,
@@ -179,7 +172,6 @@ class _ToDoScreenState extends State<ToDoScreen>
               ),
               const SizedBox(height: 12),
 
-              // ✅ LIST TODOS
               Expanded(
                 child: Consumer<ToDoProvider>(
                   builder: (context, provider, _) {
@@ -221,7 +213,7 @@ class _ToDoScreenState extends State<ToDoScreen>
                     return ListView.builder(
                       key: const PageStorageKey(
                         "todosList",
-                      ), // ✅ biar auto simpan posisi
+                      ),
                       padding: const EdgeInsets.only(
                         bottom: 10,
                         left: horizontalPadding,

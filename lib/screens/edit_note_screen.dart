@@ -84,7 +84,6 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
       selectedCategory = "personal";
     }
 
-    // Auto fokus title saat halaman dibuka
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).requestFocus(_titleFocusNode);
     });
@@ -201,7 +200,7 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
             children: [
               TextField(
                 controller: titleController,
-                focusNode: _titleFocusNode, // pasang focus node
+                focusNode: _titleFocusNode,
                 style: GoogleFonts.nunito(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,

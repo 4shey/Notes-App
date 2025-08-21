@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/models/note.dart';
 import 'package:flutter_notes_app/provider/todo_provider.dart';
@@ -83,11 +82,11 @@ class _BottomNavbarState extends State<BottomNavbar> {
   void _onFabPressed() {
     if (_currentIndex == 0) {
       homeScreenKey.currentState
-          ?.closeSearchAndDrawer(); // ✅ tutup search & drawer
+          ?.closeSearchAndDrawer();
       _openEditNoteScreen();
     } else if (_currentIndex == 1) {
       toDoScreenKey.currentState
-          ?.closeSearchAndDrawer(); // ✅ tutup search & drawer
+          ?.closeSearchAndDrawer();
       showDialog(
         context: context,
         builder: (_) => ToDoDialog(
@@ -119,9 +118,9 @@ class _BottomNavbarState extends State<BottomNavbar> {
             _currentIndex = index;
           });
           if (index == 0) {
-            homeScreenKey.currentState?.closeSearchAndDrawer(); // ✅
+            homeScreenKey.currentState?.closeSearchAndDrawer();
           } else if (index == 1) {
-            toDoScreenKey.currentState?.closeSearchAndDrawer(); // ✅
+            toDoScreenKey.currentState?.closeSearchAndDrawer();
           }
         },
       ),
@@ -142,7 +141,7 @@ class _BottomNavbarState extends State<BottomNavbar> {
                   0,
                 ),
               ),
-              const Spacer(flex: 1), // ruang di tengah untuk FAB
+              const Spacer(flex: 1),
               Expanded(
                 child: _buildNavItem(
                   Icons.list_alt_outlined,
@@ -194,14 +193,12 @@ class _BottomNavbarState extends State<BottomNavbar> {
       borderRadius: BorderRadius.circular(12),
       onTap: () {
         if (_currentIndex != index) {
-          // 🔹 tutup search & drawer sebelum pindah tab
           if (_currentIndex == 0) {
             homeScreenKey.currentState?.closeSearchAndDrawer();
           } else if (_currentIndex == 1) {
             toDoScreenKey.currentState?.closeSearchAndDrawer();
           }
 
-          // 🔹 pindah halaman
           _pageController.animateToPage(
             index,
             duration: const Duration(milliseconds: 180),

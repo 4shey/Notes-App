@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/models/note.dart';
 import 'package:flutter_notes_app/provider/note_provider.dart';
 import 'package:flutter_notes_app/screens/edit_note_screen.dart';
-import 'package:flutter_notes_app/screens/todo_screen.dart';
 import 'package:flutter_notes_app/widgets/empty_search.dart';
 import 'package:flutter_notes_app/widgets/empty_state.dart';
 import 'package:flutter_notes_app/widgets/filter_notes_drawer.dart';
@@ -85,7 +84,6 @@ class _HomeScreenState extends State<HomeScreen>
     });
   }
 
-  /// ⚡ Auto-close search & drawer
   void closeSearchAndDrawer() {
     if (searchActive) {
       setState(() {

@@ -131,6 +131,8 @@ class _ToDoCardState extends State<ToDoCard> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4),
                 ),
+                activeColor: const Color(0xFFD9614C),
+                checkColor: Colors.white,
               ),
               const SizedBox(width: 12),
               Expanded(
