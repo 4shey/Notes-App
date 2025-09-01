@@ -1,7 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_notes_app/models/users_storage.dart';
 import 'package:flutter_notes_app/provider/note_provider.dart';
+import 'package:flutter_notes_app/provider/theme_prrovider.dart';
+import 'package:flutter_notes_app/theme/color.dart';
+import 'package:flutter_notes_app/widgets/confirm_dialog.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../models/note.dart';
@@ -70,7 +74,7 @@ void showTopToast(BuildContext context, String message) {
 class _EditNoteScreenState extends State<EditNoteScreen> {
   final TextEditingController titleController = TextEditingController();
   final TextEditingController contentController = TextEditingController();
-  final FocusNode _titleFocusNode = FocusNode(); // Focus node untuk title
+  final FocusNode _titleFocusNode = FocusNode();
   String? selectedCategory;
 
   @override
@@ -92,6 +96,8 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
   @override
   void dispose() {
     _titleFocusNode.dispose();
+    titleController.dispose();
+    contentController.dispose();
     super.dispose();
   }
 
@@ -99,9 +105,13 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
   Widget build(BuildContext context) {
     bool isEditMode = widget.existingNote != null;
     final noteProvider = context.read<NoteProvider>();
+    final userStorage = context.read<UserStorage>();
+
+    final themeProvider = context.watch<ThemeProvider>();
+    bool isDarkMode = themeProvider.isDarkMode;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8EEE2),
+      backgroundColor: AppColors.white(isDarkMode),
       endDrawer: _buildCategoryDrawer(),
       appBar: AppBar(
         centerTitle: true,
@@ -120,7 +130,7 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
             Container(
               margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFFD9614C),
+                color: AppColors.mainColor(isDarkMode),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: IconButton(
@@ -128,56 +138,17 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                 onPressed: () async {
                   final confirm = await showDialog<bool>(
                     context: context,
-                    builder: (_) => AlertDialog(
-                      backgroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      title: Row(
-                        children: const [
-                          Icon(
-                            Icons.warning_amber_rounded,
-                            color: Color(0xFFD9614C),
-                          ),
-                          SizedBox(width: 8),
-                          Text('Confirm Delete'),
-                        ],
-                      ),
-                      content: Text(
-                        'Are you sure you want to delete "${widget.existingNote?.title}"?',
-                      ),
-                      actions: [
-                        OutlinedButton(
-                          style: OutlinedButton.styleFrom(
-                            side: const BorderSide(color: Colors.black),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: () => Navigator.pop(context, false),
-                          child: const Text(
-                            "Cancel",
-                            style: TextStyle(color: Colors.black),
-                          ),
-                        ),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Color(0xFFD9614C),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          onPressed: () => Navigator.pop(context, true),
-                          child: const Text(
-                            "Delete",
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ),
-                      ],
+                    builder: (_) => ConfirmDeleteDialog(
+                      title: 'Confirm Delete',
+                      content:
+                          'Are you sure you want to delete "${widget.existingNote?.title}"?',
                     ),
                   );
-                  if (confirm == true && widget.noteIndex != null) {
-                    await noteProvider.delete(widget.noteIndex!);
+
+                  if (confirm == true) {
+                    noteProvider.delete(
+                      noteProvider.notes.indexOf(widget.existingNote!),
+                    );
                     Navigator.pop(context);
                   }
                 },
@@ -230,27 +201,35 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFFD9614C),
+        backgroundColor: AppColors.mainColor(isDarkMode),
         onPressed: () async {
-          if (titleController.text.isNotEmpty &&
-              contentController.text.isNotEmpty &&
-              selectedCategory != null) {
-            final newNote = Note(
-              title: titleController.text,
-              content: contentController.text,
-              category: selectedCategory!,
-            );
-
-            if (widget.noteIndex != null) {
-              await noteProvider.addOrUpdate(newNote, index: widget.noteIndex);
-            } else {
-              await noteProvider.addOrUpdate(newNote);
-            }
-
-            Navigator.pop(context);
-          } else {
+          if (titleController.text.isEmpty ||
+              contentController.text.isEmpty ||
+              selectedCategory == null) {
             showTopToast(context, "Please fill out all fields");
+            return;
           }
+
+          final currentUser = await userStorage.loadUser();
+          if (currentUser == null) {
+            showTopToast(context, "No user logged in");
+            return;
+          }
+
+          final newNote = Note(
+            userId: currentUser.id,
+            title: titleController.text,
+            content: contentController.text,
+            category: selectedCategory!,
+          );
+
+          if (widget.noteIndex != null) {
+            await noteProvider.addOrUpdate(newNote, index: widget.noteIndex);
+          } else {
+            await noteProvider.addOrUpdate(newNote);
+          }
+
+          Navigator.pop(context);
         },
         child: const Icon(Icons.check, color: Colors.white),
       ),
@@ -258,6 +237,8 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
   }
 
   Widget _buildCategoryDrawer() {
+    final themeProvider = context.watch<ThemeProvider>();
+    bool isDarkMode = themeProvider.isDarkMode;
     return Drawer(
       child: SafeArea(
         child: ListView(
@@ -268,6 +249,7 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
               style: GoogleFonts.nunito(
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
+                color: AppColors.darkgrey(isDarkMode),
               ),
             ),
             const Divider(),
@@ -280,6 +262,7 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                   style: GoogleFonts.nunito(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
+                    color: AppColors.lightGrey(isDarkMode)
                   ),
                 ),
                 onChanged: (value) {

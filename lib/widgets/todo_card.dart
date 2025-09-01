@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/models/todo.dart';
+import 'package:flutter_notes_app/provider/theme_prrovider.dart';
+import 'package:flutter_notes_app/theme/color.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 OverlayEntry? _activeToast;
 Timer? _toastTimer;
@@ -11,7 +14,7 @@ class ToDoCard extends StatefulWidget {
   final ValueChanged<bool?> onChanged;
   final VoidCallback onTap;
 
-  const ToDoCard({
+  ToDoCard({
     super.key,
     required this.todo,
     required this.onChanged,
@@ -28,6 +31,9 @@ class _ToDoCardState extends State<ToDoCard> {
 
   void showTopToast(BuildContext context, String message) {
     final overlay = Overlay.of(context);
+    // Gunakan read, bukan watch, di event handler
+    final themeProvider = context.read<ThemeProvider>();
+    bool isDarkMode = themeProvider.isDarkMode;
 
     _toastTimer?.cancel();
     _activeToast?.remove();
@@ -41,15 +47,16 @@ class _ToDoCardState extends State<ToDoCard> {
           color: Colors.transparent,
           child: Center(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: const Color(0xFFD9614C),
+                color: AppColors.mainColor(isDarkMode),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
                 message,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: AppColors.white(isDarkMode),
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -91,12 +98,15 @@ class _ToDoCardState extends State<ToDoCard> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    bool isDarkMode = themeProvider.isDarkMode;
+
     Color borderColor = widget.todo.isCompleted
-        ? Colors.green.withOpacity(0.4)
-        : Colors.grey;
+        ? AppColors.mainColor(isDarkMode)
+        : AppColors.darkgrey(isDarkMode);
 
     if (_hovered || _pressed) {
-      borderColor = const Color(0xFFD9614C);
+      borderColor = AppColors.mainColor(isDarkMode);
     }
 
     return MouseRegion(
@@ -111,7 +121,9 @@ class _ToDoCardState extends State<ToDoCard> {
           padding: const EdgeInsets.all(16),
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: widget.todo.isCompleted ? Colors.green[50] : Colors.white,
+            color: widget.todo.isCompleted
+                ? AppColors.completedTodosColor(isDarkMode)
+                : AppColors.white(isDarkMode),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: borderColor, width: 1.4),
           ),
@@ -121,18 +133,19 @@ class _ToDoCardState extends State<ToDoCard> {
                 value: widget.todo.isCompleted,
                 onChanged: (value) {
                   widget.onChanged(value);
+                  // Gunakan showTopToast, sekarang aman
                   showTopToast(
                     context,
                     value == true
-                        ? "Task \"${widget.todo.title}\" completed"
-                        : "Task \"${widget.todo.title}\" marked incomplete",
+                        ? 'Task "${widget.todo.title}" completed'
+                        : 'Task "${widget.todo.title}" marked incomplete',
                   );
                 },
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(4),
                 ),
-                activeColor: const Color(0xFFD9614C),
-                checkColor: Colors.white,
+                activeColor: AppColors.mainColor(isDarkMode),
+                checkColor: AppColors.white(isDarkMode),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -147,17 +160,17 @@ class _ToDoCardState extends State<ToDoCard> {
                         decoration: widget.todo.isCompleted
                             ? TextDecoration.lineThrough
                             : null,
-                        color: Colors.black87,
+                        color: AppColors.darkgrey(isDarkMode),
                       ),
                     ),
                     if ((widget.todo.description ?? '').isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Text(
-                        widget.todo.description!,
+                        widget.todo.description ?? '',
                         style: GoogleFonts.nunito(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey[700],
+                          color: AppColors.lightGrey(isDarkMode),
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
@@ -178,7 +191,7 @@ class _ToDoCardState extends State<ToDoCard> {
                         style: GoogleFonts.nunito(
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
-                          color: Colors.black87,
+                          color: Colors.black,
                         ),
                       ),
                     ),
@@ -186,7 +199,7 @@ class _ToDoCardState extends State<ToDoCard> {
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(Icons.chevron_right, color: Colors.grey[600]),
+              Icon(Icons.chevron_right, color: AppColors.darkgrey(isDarkMode)),
             ],
           ),
         ),

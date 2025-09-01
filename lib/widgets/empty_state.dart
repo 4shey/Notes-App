@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_notes_app/provider/theme_prrovider.dart';
+import 'package:flutter_notes_app/theme/color.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class EmptyDataWidget extends StatelessWidget {
   final String title;
@@ -15,6 +18,8 @@ class EmptyDataWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    bool isDarkMode = themeProvider.isDarkMode;
     return SizedBox(
       width: screenSize.width,
       height: screenSize.height,
@@ -33,6 +38,7 @@ class EmptyDataWidget extends StatelessWidget {
               style: GoogleFonts.nunito(
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
+                color: AppColors.darkgrey(isDarkMode),
               ),
             ),
             const SizedBox(height: 6),
@@ -42,7 +48,7 @@ class EmptyDataWidget extends StatelessWidget {
               style: GoogleFonts.nunito(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
-                color: Colors.grey[700],
+                color: AppColors.lightGrey(isDarkMode),
               ),
             ),
           ],

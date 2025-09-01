@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/models/note.dart';
+import 'package:flutter_notes_app/models/users_storage.dart';
 import 'package:flutter_notes_app/provider/note_provider.dart';
+import 'package:flutter_notes_app/provider/theme_prrovider.dart';
 import 'package:flutter_notes_app/screens/edit_note_screen.dart';
+import 'package:flutter_notes_app/theme/color.dart';
 import 'package:flutter_notes_app/widgets/empty_search.dart';
 import 'package:flutter_notes_app/widgets/empty_state.dart';
 import 'package:flutter_notes_app/widgets/filter_notes_drawer.dart';
@@ -52,23 +55,31 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  List<Note> filteredNotes(List<Note> notes) {
-    List<Note> baseFiltered;
+  List<Note> filteredNotes(List<Note> notes, String currentUserId) {
+    // Filter note by current user first
+    List<Note> userNotes = notes
+        .where((note) => note.userId == currentUserId)
+        .toList();
 
+    // Filter by category
+    List<Note> baseFiltered;
     if (selectedCategory == "favorites") {
-      baseFiltered = notes.where((n) => n.favorite).toList();
+      baseFiltered = userNotes.where((n) => n.favorite).toList();
     } else if (selectedCategory != "all") {
-      baseFiltered = notes
+      baseFiltered = userNotes
           .where((n) => n.category == selectedCategory)
           .toList();
     } else {
-      baseFiltered = List.from(notes);
+      baseFiltered = List.from(userNotes);
     }
 
+    // Filter by search query
     if (searchQuery.isNotEmpty) {
       baseFiltered = baseFiltered
-          .where((note) =>
-              note.title.toLowerCase().contains(searchQuery.toLowerCase()))
+          .where(
+            (note) =>
+                note.title.toLowerCase().contains(searchQuery.toLowerCase()),
+          )
           .toList();
     }
 
@@ -99,171 +110,205 @@ class _HomeScreenState extends State<HomeScreen>
     super.build(context);
 
     final noteProvider = context.watch<NoteProvider>();
-    final notes = noteProvider.notes;
-    final displayedNotes = filteredNotes(notes);
+    final userStorage = context.read<UserStorage>();
+    final currentUser = userStorage.loadUser(); // Future<User?> nanti
 
-    return Scaffold(
-      key: _scaffoldKey,
-      resizeToAvoidBottomInset: false,
-      backgroundColor: const Color(0xFFF8EEE2),
-      drawer: searchActive
-          ? null
-          : FilterDrawerHome(
-              selectedCategory: selectedCategory,
-              onCategorySelected: (value) {
-                setState(() {
-                  selectedCategory = value;
-                  searchActive = false;
-                  searchQuery = "";
-                });
-              },
-            ),
-      body: SafeArea(
-        child: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: () => FocusScope.of(context).unfocus(),
-          child: Column(
-            children: [
-              const SizedBox(height: 18),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: SizedBox(
-                  height: 48,
-                  child: Row(
-                    children: [
-                      if (!searchActive)
-                        Builder(
-                          builder: (context) => IconButton(
-                            icon: Image.asset(
-                              'assets/images/bar_icon.png',
-                              height: 20,
-                              fit: BoxFit.contain,
-                            ),
-                            onPressed: () =>
-                                _scaffoldKey.currentState?.openDrawer(),
-                          ),
-                        ),
-                      if (!searchActive) const SizedBox(width: 10),
-                      Expanded(
-                        child: !searchActive
-                            ? Center(
-                                child: Text(
-                                  selectedCategory == "all"
-                                      ? 'All Notes'
-                                      : selectedCategory == "favorites"
-                                          ? 'Favorites'
-                                          : '${selectedCategory[0].toUpperCase()}${selectedCategory.substring(1)} Notes',
-                                  style: GoogleFonts.nunito(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              )
-                            : TextField(
-                                style: GoogleFonts.nunito(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                                autofocus: true,
-                                decoration: InputDecoration(
-                                  hintText: 'Search notes by title...',
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16, vertical: 12),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  suffixIcon: IconButton(
-                                    icon: const Icon(Icons.close),
-                                    onPressed: _closeSearch,
-                                  ),
-                                ),
-                                onChanged: (value) {
-                                  setState(() => searchQuery = value);
-                                },
-                              ),
-                      ),
-                      if (!searchActive) const SizedBox(width: 10),
-                      if (!searchActive)
-                        Builder(
-                          builder: (context) => IconButton(
-                            icon: Image.asset(
-                              'assets/images/search_icon.png',
-                              height: 20,
-                              fit: BoxFit.contain,
-                            ),
-                            onPressed: () => setState(() => searchActive = true),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: Builder(
-                  builder: (_) {
-                    // logic empty state mirip todos
-                    if (displayedNotes.isEmpty) {
-                      if (searchActive && searchQuery.isNotEmpty) {
-                        return Center(
-                          child: EmptySearchWidget(query: searchQuery),
-                        );
-                      } else if (selectedCategory != "all") {
-                        return Center(
-                          child: EmptyDataWidget(
-                            title: 'No Notes',
-                            subtitle: 'No notes found for your filter.',
-                            screenSize: _screenSize ?? const Size(0, 0),
-                          ),
-                        );
-                      } else if (notes.isEmpty) {
-                        return Center(
-                          child: EmptyDataWidget(
-                            title: 'No Notes yet',
-                            subtitle: 'Tap the + button to add your note.',
-                            screenSize: _screenSize ?? const Size(0, 0),
-                          ),
-                        );
-                      }
-                    }
+    final themeProvider = context.watch<ThemeProvider>();
+    bool isDarkMode = themeProvider.isDarkMode;
 
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: MasonryGridView.count(
-                        crossAxisCount: 2,
-                        mainAxisSpacing: 12,
-                        crossAxisSpacing: 12,
-                        padding: const EdgeInsets.only(bottom: 20),
-                        itemCount: displayedNotes.length,
-                        itemBuilder: (context, index) {
-                          final note = displayedNotes[index];
-                          final originalIndex = notes.indexOf(note);
-                          return GestureDetector(
-                            onTap: () => _openEditNoteScreen(
-                              note: note,
-                              index: originalIndex,
-                            ),
-                            child: NoteCard(
-                              note: note,
-                              favorite: note.favorite,
-                              onFavoriteToggle: () {
-                                noteProvider.toggleFavorite(originalIndex);
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    );
+    return FutureBuilder(
+      future: currentUser,
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator());
+        }
+
+        final userId = snapshot.data!.id;
+        final notes = noteProvider.notes;
+        final displayedNotes = filteredNotes(notes, userId);
+
+        return Scaffold(
+          key: _scaffoldKey,
+          resizeToAvoidBottomInset: false,
+          backgroundColor: AppColors.backgroundColor(isDarkMode),
+          drawer: searchActive
+              ? null
+              : FilterDrawerHome(
+                  selectedCategory: selectedCategory,
+                  onCategorySelected: (value) {
+                    setState(() {
+                      selectedCategory = value;
+                      searchActive = false;
+                      searchQuery = "";
+                    });
                   },
                 ),
+          body: SafeArea(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: Column(
+                children: [
+                  const SizedBox(height: 18),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: SizedBox(
+                      height: 48,
+                      child: Row(
+                        children: [
+                          if (!searchActive)
+                            Builder(
+                              builder: (context) => IconButton(
+                                icon: isDarkMode
+                                    ? Image.asset(
+                                        'assets/images/bar_dark.png',
+                                        height: 20,
+                                        fit: BoxFit.contain,
+                                      )
+                                    : Image.asset(
+                                        'assets/images/bar_icon.png',
+                                        height: 20,
+                                        fit: BoxFit.contain,
+                                      ),
+                                onPressed: () =>
+                                    _scaffoldKey.currentState?.openDrawer(),
+                              ),
+                            ),
+                          if (!searchActive) const SizedBox(width: 10),
+                          Expanded(
+                            child: !searchActive
+                                ? Center(
+                                    child: Text(
+                                      selectedCategory == "all"
+                                          ? 'All Notes'
+                                          : selectedCategory == "favorites"
+                                          ? 'Favorites'
+                                          : '${selectedCategory[0].toUpperCase()}${selectedCategory.substring(1)} Notes',
+                                      style: GoogleFonts.nunito(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.w900,
+                                        color: AppColors.darkgrey(isDarkMode),
+                                      ),
+                                    ),
+                                  )
+                                : TextField(
+                                    style: GoogleFonts.nunito(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    autofocus: true,
+                                    decoration: InputDecoration(
+                                      hintText: 'Search notes by title...',
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 12,
+                                          ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                        borderSide: BorderSide.none,
+                                      ),
+                                      suffixIcon: IconButton(
+                                        icon: const Icon(Icons.close),
+                                        onPressed: _closeSearch,
+                                      ),
+                                    ),
+                                    onChanged: (value) {
+                                      setState(() => searchQuery = value);
+                                    },
+                                  ),
+                          ),
+                          if (!searchActive) const SizedBox(width: 10),
+                          if (!searchActive)
+                            Builder(
+                              builder: (context) => IconButton(
+                                icon: isDarkMode
+                                    ? Image.asset(
+                                        'assets/images/search_dark.png',
+                                        height: 20,
+                                        fit: BoxFit.contain,
+                                      )
+                                    : Image.asset(
+                                        'assets/images/search_icon.png',
+                                        height: 20,
+                                        fit: BoxFit.contain,
+                                      ),
+                                onPressed: () =>
+                                    setState(() => searchActive = true),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: Builder(
+                      builder: (_) {
+                        if (displayedNotes.isEmpty) {
+                          if (searchActive && searchQuery.isNotEmpty) {
+                            return Center(
+                              child: EmptySearchWidget(query: searchQuery),
+                            );
+                          } else if (selectedCategory != "all") {
+                            return Center(
+                              child: EmptyDataWidget(
+                                title: 'No Notes',
+                                subtitle: 'No notes found for your filter.',
+                                screenSize: _screenSize ?? const Size(0, 0),
+                              ),
+                            );
+                          } else if (notes
+                              .where((n) => n.userId == userId)
+                              .isEmpty) {
+                            return Center(
+                              child: EmptyDataWidget(
+                                title: 'No Notes yet',
+                                subtitle: 'Tap the + button to add your note.',
+                                screenSize: _screenSize ?? const Size(0, 0),
+                              ),
+                            );
+                          }
+                        }
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: MasonryGridView.count(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 12,
+                            crossAxisSpacing: 12,
+                            padding: const EdgeInsets.only(bottom: 20),
+                            itemCount: displayedNotes.length,
+                            itemBuilder: (context, index) {
+                              final note = displayedNotes[index];
+                              final originalIndex = notes.indexOf(note);
+                              return GestureDetector(
+                                onTap: () => _openEditNoteScreen(
+                                  note: note,
+                                  index: originalIndex,
+                                ),
+                                child: NoteCard(
+                                  note: note,
+                                  favorite: note.favorite,
+                                  onFavoriteToggle: () {
+                                    noteProvider.toggleFavorite(originalIndex);
+                                  },
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

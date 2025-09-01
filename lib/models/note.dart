@@ -1,12 +1,14 @@
 import 'dart:convert';
 
 class Note {
+  String userId; // ID user pemilik note
   String title;
   String content;
   String category;
   bool favorite;
 
   Note({
+    required this.userId,
     required this.title,
     required this.content,
     required this.category,
@@ -15,6 +17,7 @@ class Note {
 
   Map<String, dynamic> toMap() {
     return {
+      'userId': userId,
       'title': title,
       'content': content,
       'category': category,
@@ -24,6 +27,7 @@ class Note {
 
   factory Note.fromMap(Map<String, dynamic> map) {
     return Note(
+      userId: map['userId'], // ambil userId dari storage
       title: map['title'],
       content: map['content'],
       category: map['category'],

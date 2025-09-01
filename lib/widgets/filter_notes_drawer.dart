@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_notes_app/provider/theme_prrovider.dart';
+import 'package:flutter_notes_app/theme/color.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class FilterDrawerHome extends StatefulWidget {
   final String selectedCategory; // category awal yang dipilih
@@ -28,7 +31,11 @@ class _FilterDrawerHomeState extends State<FilterDrawerHome> {
 
   @override
   Widget build(BuildContext context) {
+    
+    final themeProvider = context.watch<ThemeProvider>();
+    bool isDarkMode = themeProvider.isDarkMode;
     return Drawer(
+      backgroundColor: AppColors.white(isDarkMode),
       child: SafeArea(
         top: false,
         child: ListView(
@@ -36,7 +43,7 @@ class _FilterDrawerHomeState extends State<FilterDrawerHome> {
           children: [
             // Header drawer
             DrawerHeader(
-              decoration: const BoxDecoration(color: Color(0xFFD9614C)), // warna background
+              decoration: BoxDecoration(color: AppColors.mainColor(isDarkMode)), // warna background
               child: Align(
                 alignment: Alignment.bottomLeft,
                 child: Text(
@@ -75,7 +82,7 @@ class _FilterDrawerHomeState extends State<FilterDrawerHome> {
                 ),
                 value: c, // nilai category
                 groupValue: _currentCategory, // category yang sedang dipilih
-                activeColor: const Color(0xFFD9614C), // warna saat dipilih
+                activeColor: AppColors.mainColor(isDarkMode), // warna saat dipilih
                 onChanged: (v) {
                   setState(() => _currentCategory = v!); // update category
                   widget.onCategorySelected(v!); // kirim ke parent

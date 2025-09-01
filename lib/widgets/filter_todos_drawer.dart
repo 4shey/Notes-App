@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_notes_app/provider/theme_prrovider.dart';
+import 'package:flutter_notes_app/theme/color.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 
 class FilterDrawerTodo extends StatefulWidget {
   final String statusFilter; // filter status awal
@@ -37,6 +40,8 @@ class _FilterDrawerTodoState extends State<FilterDrawerTodo> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    bool isDarkMode = themeProvider.isDarkMode;
     return Drawer(
       child: SafeArea(
         top: false,
@@ -45,7 +50,7 @@ class _FilterDrawerTodoState extends State<FilterDrawerTodo> {
           children: [
             // Header Drawer
             DrawerHeader(
-              decoration: const BoxDecoration(color: Color(0xFFD9614C)),
+              decoration: BoxDecoration(color: AppColors.mainColor(isDarkMode)),
               child: Align(
                 alignment: Alignment.bottomLeft,
                 child: Text(
@@ -75,7 +80,7 @@ class _FilterDrawerTodoState extends State<FilterDrawerTodo> {
               ),
               value: 'all',
               groupValue: _status,
-              activeColor: const Color(0xFFD9614C),
+              activeColor: AppColors.mainColor(isDarkMode),
               onChanged: (v) {
                 setState(() => _status = v!);
                 widget.onStatusSelected(v!);
@@ -90,7 +95,7 @@ class _FilterDrawerTodoState extends State<FilterDrawerTodo> {
               ),
               value: 'completed',
               groupValue: _status,
-              activeColor: const Color(0xFFD9614C),
+              activeColor: AppColors.mainColor(isDarkMode),
               onChanged: (v) {
                 setState(() => _status = v!);
                 widget.onStatusSelected(v!);
@@ -105,7 +110,7 @@ class _FilterDrawerTodoState extends State<FilterDrawerTodo> {
               ),
               value: 'pending',
               groupValue: _status,
-              activeColor: const Color(0xFFD9614C),
+              activeColor: AppColors.mainColor(isDarkMode),
               onChanged: (v) {
                 setState(() => _status = v!);
                 widget.onStatusSelected(v!);
@@ -130,7 +135,7 @@ class _FilterDrawerTodoState extends State<FilterDrawerTodo> {
               ),
               value: 'all',
               groupValue: _category,
-              activeColor: const Color(0xFFD9614C),
+              activeColor: AppColors.mainColor(isDarkMode),
               onChanged: (v) {
                 setState(() => _category = v!);
                 widget.onCategorySelected(v!);
@@ -146,7 +151,7 @@ class _FilterDrawerTodoState extends State<FilterDrawerTodo> {
                 ),
                 value: c,
                 groupValue: _category,
-                activeColor: const Color(0xFFD9614C),
+                activeColor: AppColors.mainColor(isDarkMode),
                 onChanged: (v) {
                   setState(() => _category = v!);
                   widget.onCategorySelected(v!);

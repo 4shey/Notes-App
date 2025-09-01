@@ -1,27 +1,18 @@
-import 'dart:convert';
+// import 'package:flutter_notes_app/models/todo.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:flutter_notes_app/models/todo.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// class ToDoStorage {
+//   static String keyForUser(String userId) => 'todos_$userId';
 
-class ToDoStorage {
-  static const String _key = 'todos_v1';
+//   Future<void> saveTodo(String userId, ToDoItem todo) async {
+//     final prefs = await SharedPreferences.getInstance();
+//     await prefs.setString(keyForUser(userId), todo.toJson());
+//   }
 
-  static Future<List<ToDoItem>> load() async {
-    final prefs = await SharedPreferences.getInstance();
-    final list = prefs.getStringList(_key) ?? [];
-    return list
-        .map((s) => ToDoItem.fromMap(jsonDecode(s) as Map<String, dynamic>))
-        .toList();
-  }
-
-  static Future<void> save(List<ToDoItem> todos) async {
-    final prefs = await SharedPreferences.getInstance();
-    final list = todos.map((t) => jsonEncode(t.toMap())).toList();
-    await prefs.setStringList(_key, list);
-  }
-
-  static Future<void> clear() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_key);
-  }
-}
+//   Future<ToDoItem?> loadNote(String userId) async {
+//     final prefs = await SharedPreferences.getInstance();
+//     final todoJson = prefs.getString(keyForUser(userId));
+//     if (todoJson == null) return null;
+//     return ToDoItem.fromJson(todoJson);
+//   }
+// }
