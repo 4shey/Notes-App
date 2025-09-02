@@ -4,7 +4,7 @@ import 'package:flutter_notes_app/provider/theme_prrovider.dart';
 import 'package:flutter_notes_app/provider/todo_provider.dart';
 import 'package:flutter_notes_app/widgets/confirm_dialog.dart';
 import 'package:flutter_notes_app/theme/color.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_notes_app/widgets/input_decoration.dart';
 import 'package:provider/provider.dart';
 
 class ToDoDialog extends StatefulWidget {
@@ -52,33 +52,8 @@ class _ToDoDialogState extends State<ToDoDialog> {
     final provider = context.read<ToDoProvider>();
     final isDarkMode = context.watch<ThemeProvider>().isDarkMode;
 
-    InputDecoration inputStyle(String label) => InputDecoration(
-      labelText: label,
-      labelStyle: GoogleFonts.nunito(
-        fontWeight: FontWeight.w600,
-        color: AppColors.lightGrey(isDarkMode),
-      ),
-      filled: true,
-      fillColor: AppColors.white(isDarkMode),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.lightGrey(isDarkMode)),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(color: AppColors.lightGrey(isDarkMode)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide(
-          color: AppColors.mainColor(isDarkMode),
-          width: 2,
-        ),
-      ),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-    );
-
     return Dialog(
+      backgroundColor: AppColors.backgroundColor(isDarkMode),
       insetPadding: const EdgeInsets.all(24),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
       child: SingleChildScrollView(
@@ -101,7 +76,8 @@ class _ToDoDialogState extends State<ToDoDialog> {
                 ),
                 Text(
                   widget.existing == null ? 'Add ToDo' : 'Edit ToDo',
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
                     fontWeight: FontWeight.w900,
                     fontSize: 20,
                     color: AppColors.darkgrey(isDarkMode),
@@ -110,29 +86,41 @@ class _ToDoDialogState extends State<ToDoDialog> {
                 const SizedBox(height: 16),
                 TextField(
                   controller: titleController,
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
                     fontWeight: FontWeight.w600,
                     color: AppColors.darkgrey(isDarkMode),
                   ),
                   autofocus: true,
-                  decoration: inputStyle('Title'),
+                  decoration: inputDecoration(
+                    'Title',
+                    Icons.title, // kasih icon
+                    isDarkMode,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: descriptionController,
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
                     fontWeight: FontWeight.w600,
                     color: AppColors.darkgrey(isDarkMode),
                   ),
-                  decoration: inputStyle('Description (optional)'),
+                  decoration: inputDecoration(
+                    'Description (optional)',
+                    Icons.description, // kasih icon
+                    isDarkMode,
+                  ),
                   maxLines: 4,
                 ),
+
                 const SizedBox(height: 16),
                 Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     'Category',
-                    style: GoogleFonts.nunito(
+                    style: TextStyle(
+                      fontFamily: 'Nunito',
                       fontSize: 14,
                       fontWeight: FontWeight.w800,
                       color: AppColors.darkgrey(isDarkMode),
@@ -148,7 +136,8 @@ class _ToDoDialogState extends State<ToDoDialog> {
                     return ChoiceChip(
                       label: Text(
                         c[0].toUpperCase() + c.substring(1),
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
                           fontWeight: selected
                               ? FontWeight.w900
                               : FontWeight.w700,

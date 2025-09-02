@@ -10,6 +10,7 @@ import 'package:flutter_notes_app/screens/register_screen.dart';
 import 'package:flutter_notes_app/theme/color.dart';
 import 'package:flutter_notes_app/widgets/exit_dialog.dart';
 import 'package:flutter_notes_app/widgets/input_decoration.dart';
+import 'package:flutter_notes_app/widgets/snackbar.dart';
 import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -30,8 +31,10 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Email & password cannot be empty')),
+      TopToast.show(
+        context,
+        "Please enter your email and password",
+        type: ToastType.error,
       );
       return;
     }
@@ -52,9 +55,11 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (_) => const BottomNavbar()),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid email or password')),
-      );
+      TopToast.show(
+        context,
+        "Invalid email or password",
+        type: ToastType.error,
+      ); 
     }
   }
 

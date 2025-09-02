@@ -13,7 +13,7 @@ class User {
     required this.id,
     required this.email,
     required this.password,
-    this.name = '',
+    required this.name,
     this.isLoggedIn = false,
     this.profileImage,
   });
@@ -22,13 +22,14 @@ class User {
     String? id,
     String? email,
     String? password,
-    String? fullName,
+    String? name,
     bool? isLoggedIn,
     Uint8List? profileImage,
   }) {
     return User(
       id: id ?? this.id,
       email: email ?? this.email,
+      name: name ?? this.name,
       password: password ?? this.password,
       isLoggedIn: isLoggedIn ?? this.isLoggedIn,
       profileImage: profileImage ?? this.profileImage,

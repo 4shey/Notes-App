@@ -112,8 +112,7 @@ class _BottomNavbarState extends State<BottomNavbar> {
     _pages = [
       HomeScreen(key: homeScreenKey),
       ToDoScreen(key: toDoScreenKey),
-      ProfileScreen(isDarkMode: isDarkMode),
-      SettingsScreen(),
+      ProfileScreen(),
     ];
 
     return WillPopScope(
@@ -125,7 +124,7 @@ class _BottomNavbarState extends State<BottomNavbar> {
           builder: (context) => ConfirmCloseDialog(
             onConfirm: () {
               shouldClose = true;
-              SystemNavigator.pop(); // langsung close app
+              SystemNavigator.pop();
             },
           ),
         );
@@ -183,45 +182,28 @@ class _BottomNavbarState extends State<BottomNavbar> {
                     isDarkMode,
                   ),
                 ),
-                Expanded(
-                  child: _buildNavItem(
-                    Icons.settings_outlined,
-                    Icons.settings,
-                    "Setting",
-                    3,
-                    isDarkMode,
-                  ),
-                ),
               ],
             ),
           ),
         ),
         floatingActionButton: _currentIndex == 2 || _currentIndex == 3
             ? null
-            : Container(
-                width: 70,
-                height: 70,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.mainColor(isDarkMode),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.mainColor(isDarkMode).withOpacity(0.4),
-                      blurRadius: 10,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: FloatingActionButton(
-                  backgroundColor: AppColors.mainColor(isDarkMode),
-                  elevation: 0,
-                  highlightElevation: 0,
-                  onPressed: _onFabPressed,
-                  shape: const CircleBorder(),
-                  child: const Icon(Icons.add, size: 32, color: Colors.white),
+            : Transform.translate(
+                offset: const Offset(-5, -5),
+                child: SizedBox(
+                  width: 70,
+                  height: 70,
+                  child: FloatingActionButton(
+                    backgroundColor: AppColors.mainColor(isDarkMode),
+                    elevation: 6,
+                    onPressed: _onFabPressed,
+                    shape: const CircleBorder(),
+                    child: const Icon(Icons.add, size: 32, color: Colors.white),
+                  ),
                 ),
               ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
     );
   }
@@ -238,6 +220,13 @@ class _BottomNavbarState extends State<BottomNavbar> {
       borderRadius: BorderRadius.circular(12),
       onTap: () {
         if (_currentIndex != index) {
+          // Tutup search & drawer dulu
+          if (_currentIndex == 0) {
+            homeScreenKey.currentState?.closeSearchAndDrawer();
+          } else if (_currentIndex == 1) {
+            toDoScreenKey.currentState?.closeSearchAndDrawer();
+          }
+
           setState(() => _currentIndex = index);
           _pageController.animateToPage(
             index,
@@ -246,6 +235,7 @@ class _BottomNavbarState extends State<BottomNavbar> {
           );
         }
       },
+
       child: SizedBox(
         height: double.infinity,
         child: Column(

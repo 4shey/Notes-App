@@ -2,13 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/models/users_storage.dart';
 import 'package:flutter_notes_app/provider/theme_prrovider.dart';
-import 'package:flutter_notes_app/provider/todo_provider.dart';
 import 'package:flutter_notes_app/theme/color.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_notes_app/screens/bottom_navbar.dart';
 import 'package:flutter_notes_app/screens/login_screen.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashIconScreen extends StatefulWidget {
   const SplashIconScreen({super.key});
@@ -23,11 +21,6 @@ class _SplashIconScreenState extends State<SplashIconScreen> {
     super.initState();
     _startSplash();
   }
-
-  // Future<bool> loadDarkMode() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   return prefs.getBool('darkMode') ?? false; // default light mode
-  // }
 
   Future<void> _startSplash() async {
     await Future.delayed(const Duration(seconds: 5)); // durasi splash
@@ -50,22 +43,24 @@ class _SplashIconScreenState extends State<SplashIconScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.read<ToDoProvider>();
-    final isDarkMode = context.watch<ThemeProvider>().isDarkMode;
+    final themeProvider = context.watch<ThemeProvider>();
+    bool isDarkMode = themeProvider.isDarkMode;
     return Scaffold(
       backgroundColor: AppColors.backgroundColor(isDarkMode),
       body: Center(
-        child: isDarkMode? Lottie.asset(
-          'assets/lottie/splash_dark.json',
-          width: 250,
-          height: 250,
-          fit: BoxFit.contain,
-        ): Lottie.asset(
-          'assets/lottie/splash.json',
-          width: 250,
-          height: 250,
-          fit: BoxFit.contain,
-        ),
+        child: isDarkMode
+            ? Lottie.asset(
+                'assets/lottie/splash_dark.json',
+                width: 250,
+                height: 250,
+                fit: BoxFit.contain,
+              )
+            : Lottie.asset(
+                'assets/lottie/splash.json',
+                width: 250,
+                height: 250,
+                fit: BoxFit.contain,
+              ),
       ),
     );
   }

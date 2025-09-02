@@ -1,11 +1,9 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_notes_app/provider/theme_prrovider.dart';
+import 'package:flutter_notes_app/theme/color.dart';
+import 'package:flutter_notes_app/widgets/snackbar.dart';
+import 'package:provider/provider.dart';
 import '../models/note.dart';
-
-OverlayEntry? _activeToast; 
-Timer? _toastTimer;
 
 class NoteCard extends StatelessWidget {
   final Note note;
@@ -18,63 +16,15 @@ class NoteCard extends StatelessWidget {
     required this.favorite,
     this.onFavoriteToggle,
   });
-  
-void showTopToast(BuildContext context, String message) {
-  final overlay = Overlay.of(context);
-
-  _toastTimer?.cancel();
-  _activeToast?.remove();
-
-  _activeToast = OverlayEntry(
-    builder: (context) => Positioned(
-      top: MediaQuery.of(context).padding.top + 16,
-      left: 20,
-      right: 20,
-      child: Material(
-        color: Colors.transparent,
-        child: Center(
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFD9614C),
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 6,
-                  offset: Offset(0, 3),
-                ),
-              ],
-            ),
-            child: Text(
-              message,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ),
-        ),
-      ),
-    ),
-  );
-
-  overlay.insert(_activeToast!);
-
-  // auto remove setelah 1.5 detik
-  _toastTimer = Timer(const Duration(milliseconds: 1500), () {
-    _activeToast?.remove();
-    _activeToast = null;
-  });
-}
-
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+    bool isDarkMode = themeProvider.isDarkMode;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.white(isDarkMode),
         borderRadius: BorderRadius.circular(12),
         boxShadow: const [
           BoxShadow(
@@ -92,7 +42,8 @@ void showTopToast(BuildContext context, String message) {
               Expanded(
                 child: Text(
                   note.title,
-                  style: GoogleFonts.nunito(
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
                     fontSize: 14,
                     fontWeight: FontWeight.w900,
                   ),
@@ -102,18 +53,20 @@ void showTopToast(BuildContext context, String message) {
               IconButton(
                 icon: Icon(
                   favorite ? Icons.star : Icons.star_border,
-                  color: favorite ? Colors.yellow[700] : Colors.grey,
+                  color: favorite
+                      ? Colors.yellow[700]
+                      : AppColors.lightGrey(isDarkMode),
                 ),
                 onPressed: () {
                   if (onFavoriteToggle != null) {
                     onFavoriteToggle!();
                   }
-
-                  showTopToast(
+                  TopToast.show(
                     context,
                     favorite
                         ? "Removed \"${note.title}\" from favorites"
                         : "Added \"${note.title}\" to favorites",
+                    type: ToastType.info,
                   );
                 },
               ),
@@ -122,7 +75,8 @@ void showTopToast(BuildContext context, String message) {
           const SizedBox(height: 8),
           Text(
             note.content,
-            style: GoogleFonts.nunito(
+            style: TextStyle(
+              fontFamily: 'Nunito',
               fontSize: 13,
               fontWeight: FontWeight.w700,
             ),

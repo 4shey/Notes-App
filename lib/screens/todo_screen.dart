@@ -9,7 +9,6 @@ import 'package:flutter_notes_app/widgets/empty_state.dart';
 import 'package:flutter_notes_app/widgets/filter_todos_drawer.dart';
 import 'package:flutter_notes_app/widgets/todo_card.dart';
 import 'package:flutter_notes_app/widgets/todo_dialog.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 final GlobalKey<ToDoScreenState> toDoScreenKey = GlobalKey<ToDoScreenState>();
@@ -178,14 +177,16 @@ class ToDoScreenState extends State<ToDoScreen>
                                 ? Center(
                                     child: Text(
                                       _getHeaderTitle(),
-                                      style: GoogleFonts.nunito(
+                                      style: TextStyle(
+                                        fontFamily: 'Nunito',
                                         fontSize: 20,
                                         fontWeight: FontWeight.w900,
                                       ),
                                     ),
                                   )
                                 : TextField(
-                                    style: GoogleFonts.nunito(
+                                    style: TextStyle(
+                                      fontFamily: 'Nunito',
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -193,7 +194,7 @@ class ToDoScreenState extends State<ToDoScreen>
                                     decoration: InputDecoration(
                                       hintText: 'Search todos by title...',
                                       filled: true,
-                                      fillColor: Colors.white,
+                                      fillColor: AppColors.white(isDarkMode),
                                       contentPadding:
                                           const EdgeInsets.symmetric(
                                             horizontal: 16,

@@ -122,9 +122,12 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
           style: GoogleFonts.nunito(fontSize: 20, fontWeight: FontWeight.w900),
         ),
         leading: IconButton(
-          icon: Image.asset('assets/images/arrow_back.png', height: 22),
+          icon: isDarkMode
+              ? Image.asset('assets/images/arrow_dark.png', height: 22)
+              : Image.asset('assets/images/arrow_back.png', height: 22),
           onPressed: () => Navigator.pop(context),
         ),
+
         actions: [
           if (isEditMode)
             Container(
@@ -156,7 +159,9 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
             ),
           Builder(
             builder: (context) => IconButton(
-              icon: Image.asset('assets/images/bar_icon.png', height: 22),
+              icon: isDarkMode
+                  ? Image.asset('assets/images/bar_dark.png', height: 22)
+                  : Image.asset('assets/images/bar_icon.png', height: 22),
               onPressed: () => Scaffold.of(context).openEndDrawer(),
             ),
           ),
@@ -262,7 +267,7 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
                   style: GoogleFonts.nunito(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.lightGrey(isDarkMode)
+                    color: AppColors.lightGrey(isDarkMode),
                   ),
                 ),
                 onChanged: (value) {

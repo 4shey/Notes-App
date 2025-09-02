@@ -1,13 +1,9 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/models/todo.dart';
 import 'package:flutter_notes_app/provider/theme_prrovider.dart';
 import 'package:flutter_notes_app/theme/color.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_notes_app/widgets/snackbar.dart';
 import 'package:provider/provider.dart';
-
-OverlayEntry? _activeToast;
-Timer? _toastTimer;
 
 class ToDoCard extends StatefulWidget {
   final ToDoItem todo;
@@ -28,51 +24,6 @@ class ToDoCard extends StatefulWidget {
 class _ToDoCardState extends State<ToDoCard> {
   bool _hovered = false;
   bool _pressed = false;
-
-  void showTopToast(BuildContext context, String message) {
-    final overlay = Overlay.of(context);
-    // Gunakan read, bukan watch, di event handler
-    final themeProvider = context.read<ThemeProvider>();
-    bool isDarkMode = themeProvider.isDarkMode;
-
-    _toastTimer?.cancel();
-    _activeToast?.remove();
-
-    _activeToast = OverlayEntry(
-      builder: (context) => Positioned(
-        top: MediaQuery.of(context).padding.top + 16,
-        left: 20,
-        right: 20,
-        child: Material(
-          color: Colors.transparent,
-          child: Center(
-            child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.mainColor(isDarkMode),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                message,
-                style: TextStyle(
-                  color: AppColors.white(isDarkMode),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-
-    overlay.insert(_activeToast!);
-
-    _toastTimer = Timer(const Duration(milliseconds: 1500), () {
-      _activeToast?.remove();
-      _activeToast = null;
-    });
-  }
 
   Color _chipColor(String category) {
     switch (category) {
@@ -133,12 +84,12 @@ class _ToDoCardState extends State<ToDoCard> {
                 value: widget.todo.isCompleted,
                 onChanged: (value) {
                   widget.onChanged(value);
-                  // Gunakan showTopToast, sekarang aman
-                  showTopToast(
+                  TopToast.show(
                     context,
                     value == true
                         ? 'Task "${widget.todo.title}" completed'
-                        : 'Task "${widget.todo.title}" marked incomplete',
+                        : 'Task "${widget.todo.title}" uncomplete',
+                    type: ToastType.info,
                   );
                 },
                 shape: RoundedRectangleBorder(
@@ -154,7 +105,8 @@ class _ToDoCardState extends State<ToDoCard> {
                   children: [
                     Text(
                       widget.todo.title,
-                      style: GoogleFonts.nunito(
+                      style: TextStyle(
+                        fontFamily: 'Nunito',
                         fontSize: 18,
                         fontWeight: FontWeight.w800,
                         decoration: widget.todo.isCompleted
@@ -167,7 +119,8 @@ class _ToDoCardState extends State<ToDoCard> {
                       const SizedBox(height: 6),
                       Text(
                         widget.todo.description ?? '',
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
                           color: AppColors.lightGrey(isDarkMode),
@@ -188,7 +141,8 @@ class _ToDoCardState extends State<ToDoCard> {
                       ),
                       child: Text(
                         _categoryLabel(widget.todo.category),
-                        style: GoogleFonts.nunito(
+                        style: TextStyle(
+                          fontFamily: 'Nunito',
                           fontSize: 12,
                           fontWeight: FontWeight.w800,
                           color: Colors.black,

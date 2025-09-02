@@ -5,6 +5,7 @@ import 'package:flutter_notes_app/provider/theme_prrovider.dart';
 import 'package:flutter_notes_app/screens/login_screen.dart';
 import 'package:flutter_notes_app/theme/color.dart';
 import 'package:flutter_notes_app/widgets/input_decoration.dart';
+import 'package:flutter_notes_app/widgets/snackbar.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
 
@@ -19,6 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
+  final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
@@ -26,42 +28,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final Uuid _uuid = const Uuid();
 
   Future<void> _register() async {
+    String name = _nameController.text.trim();
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
     String confirmPassword = _confirmPasswordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("All fields must be filled!"),
-          backgroundColor: Colors.red,
-        ),
+    if (name.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+      TopToast.show(
+        context,
+        "All fields must be filled",
+        type: ToastType.error,
       );
       return;
     }
 
     if (!email.endsWith("@gmail.com")) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Email must end with @gmail.com"),
-          backgroundColor: Colors.red,
-        ),
+      TopToast.show(
+        context,
+        "Email must end with @gmail.com",
+        type: ToastType.error,
       );
       return;
     }
 
     if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Password and Confirm Password do not match!"),
-          backgroundColor: Colors.red,
-        ),
+      TopToast.show(
+        context,
+        "Password and confirm password do not match",
+        type: ToastType.error,
       );
       return;
     }
 
     final user = User(
       id: _uuid.v4(),
+      name: name,
       email: email,
       password: password,
       isLoggedIn: false,
@@ -71,11 +72,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (!mounted) return;
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text("Register Success"),
-        backgroundColor: Colors.green,
-      ),
+    TopToast.show(
+      context,
+      "Register success",
+      type: ToastType.success,
     );
 
     Navigator.pushReplacement(
@@ -88,6 +88,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     bool isDarkMode = themeProvider.isDarkMode;
+
     return Scaffold(
       backgroundColor: AppColors.backgroundColor(isDarkMode),
       body: Center(
@@ -108,6 +109,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 50),
+
+                // 🔹 Name field
+                TextField(
+                  controller: _nameController,
+                  style: const TextStyle(
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w800,
+                    fontSize: 18,
+                  ),
+                  decoration: inputDecoration(
+                    "Name",
+                    Icons.person,
+                    themeProvider.isDarkMode,
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // 🔹 Email field
                 TextField(
                   controller: _emailController,
                   style: const TextStyle(
@@ -122,6 +141,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
+
+                // 🔹 Password field
                 TextField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
@@ -130,31 +151,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     fontWeight: FontWeight.w800,
                     fontSize: 18,
                   ),
-                  decoration:
-                      inputDecoration(
-                        "Password",
-                        Icons.lock,
-                        themeProvider.isDarkMode,
-                      ).copyWith(
-                        suffixIcon: Padding(
-                          padding: const EdgeInsets.only(right: 12, left: 6),
-                          child: IconButton(
-                            icon: Icon(
-                              _obscurePassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: AppColors.mainColor(isDarkMode),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _obscurePassword = !_obscurePassword;
-                              });
-                            },
-                          ),
+                  decoration: inputDecoration(
+                    "Password",
+                    Icons.lock,
+                    themeProvider.isDarkMode,
+                  ).copyWith(
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.only(right: 12, left: 6),
+                      child: IconButton(
+                        icon: Icon(
+                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                          color: AppColors.mainColor(isDarkMode),
                         ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
                       ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 16),
+
+                // 🔹 Confirm password
                 TextField(
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
@@ -163,32 +183,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     fontWeight: FontWeight.w800,
                     fontSize: 18,
                   ),
-                  decoration:
-                      inputDecoration(
-                        "Confirm Password",
-                        Icons.lock,
-                        themeProvider.isDarkMode,
-                      ).copyWith(
-                        suffixIcon: Padding(
-                          padding: const EdgeInsets.only(right: 12, left: 6),
-                          child: IconButton(
-                            icon: Icon(
-                              _obscureConfirmPassword
-                                  ? Icons.visibility_off
-                                  : Icons.visibility,
-                              color: AppColors.mainColor(isDarkMode),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _obscureConfirmPassword =
-                                    !_obscureConfirmPassword;
-                              });
-                            },
-                          ),
+                  decoration: inputDecoration(
+                    "Confirm Password",
+                    Icons.lock,
+                    themeProvider.isDarkMode,
+                  ).copyWith(
+                    suffixIcon: Padding(
+                      padding: const EdgeInsets.only(right: 12, left: 6),
+                      child: IconButton(
+                        icon: Icon(
+                          _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
+                          color: AppColors.mainColor(isDarkMode),
                         ),
+                        onPressed: () {
+                          setState(() {
+                            _obscureConfirmPassword = !_obscureConfirmPassword;
+                          });
+                        },
                       ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 50),
+
+                // 🔹 Register button
                 ElevatedButton(
                   onPressed: _register,
                   style: ElevatedButton.styleFrom(
@@ -209,6 +227,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
+
+                // 🔹 Login redirect
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -224,9 +244,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       onPressed: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
+                          MaterialPageRoute(builder: (context) => const LoginScreen()),
                         );
                       },
                       child: Text(

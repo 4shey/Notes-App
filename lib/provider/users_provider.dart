@@ -25,13 +25,7 @@ class EditProfileProvider with ChangeNotifier {
   Future<void> updateProfile({String? name, String? email}) async {
     if (_user == null) return;
 
-    _user = User(
-      id: _user!.id,
-      email: email ?? _user!.email,
-      password: _user!.password,
-      name: name ?? _user!.name,
-      isLoggedIn: true,
-    );
+    _user = _user!.copyWith(name: name, email: email);
 
     await _storage.saveUser(_user!);
     notifyListeners();
@@ -76,7 +70,9 @@ class EditProfileProvider with ChangeNotifier {
     // Pick image langsung
     final pickedFile = await picker.pickImage(source: source);
     if (pickedFile != null) {
-      final bytes = await File(pickedFile.path).readAsBytes(); // konversi ke Uint8List
+      final bytes = await File(
+        pickedFile.path,
+      ).readAsBytes(); // konversi ke Uint8List
       _user = _user?.copyWith(profileImage: bytes);
 
       if (_user != null) {

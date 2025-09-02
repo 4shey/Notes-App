@@ -14,18 +14,7 @@ class SettingsScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor(isDarkMode),
-      appBar: AppBar(
-        title: Text(
-          'Settings',
-          style: GoogleFonts.nunito(
-            color: AppColors.darkgrey(isDarkMode),
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: AppColors.backgroundColor(isDarkMode),
-        elevation: 0,
-        iconTheme: IconThemeData(color: AppColors.darkgrey(isDarkMode)),
-      ),
+      
       body: Center(
         child: Container(
           padding: const EdgeInsets.all(16),

@@ -47,17 +47,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Notes & ToDo App',
-      theme: ThemeData(
-        primaryColor: AppColors.mainColor(isDark),
-        scaffoldBackgroundColor: AppColors.backgroundColor(isDark),
-        brightness: Brightness.light,
-      ),
-      darkTheme: ThemeData(
-        primaryColor: AppColors.mainColor(isDark),
-        scaffoldBackgroundColor: AppColors.backgroundColor(isDark),
-        brightness: Brightness.dark,
-      ),
-      themeMode: isDark ? ThemeMode.dark : ThemeMode.light,
       home: const SplashIconScreen(),
     );
   }

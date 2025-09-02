@@ -32,5 +32,5 @@ class AppColors {
       isDarkMode ? mainColorDark : mainColorLight;
 
   static Color completedTodosColor(bool isDarkmode) =>
-      isDarkmode ? cTodosColorDark : cTodosColorLight;
+      isDarkmode ? cTodosColorDark : const Color.fromARGB(56, 217, 97, 76);
 }

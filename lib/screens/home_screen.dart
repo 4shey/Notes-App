@@ -10,7 +10,6 @@ import 'package:flutter_notes_app/widgets/empty_state.dart';
 import 'package:flutter_notes_app/widgets/filter_notes_drawer.dart';
 import 'package:flutter_notes_app/widgets/note_card.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 final GlobalKey<_HomeScreenState> homeScreenKey = GlobalKey<_HomeScreenState>();
@@ -111,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen>
 
     final noteProvider = context.watch<NoteProvider>();
     final userStorage = context.read<UserStorage>();
-    final currentUser = userStorage.loadUser(); // Future<User?> nanti
+    final currentUser = userStorage.loadUser();
 
     final themeProvider = context.watch<ThemeProvider>();
     bool isDarkMode = themeProvider.isDarkMode;
@@ -184,7 +183,8 @@ class _HomeScreenState extends State<HomeScreen>
                                           : selectedCategory == "favorites"
                                           ? 'Favorites'
                                           : '${selectedCategory[0].toUpperCase()}${selectedCategory.substring(1)} Notes',
-                                      style: GoogleFonts.nunito(
+                                      style: TextStyle(
+                                        fontFamily: 'Nunito',
                                         fontSize: 20,
                                         fontWeight: FontWeight.w900,
                                         color: AppColors.darkgrey(isDarkMode),
@@ -192,7 +192,8 @@ class _HomeScreenState extends State<HomeScreen>
                                     ),
                                   )
                                 : TextField(
-                                    style: GoogleFonts.nunito(
+                                    style: TextStyle(
+                                      fontFamily: 'Nunito',
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
                                     ),
@@ -200,7 +201,7 @@ class _HomeScreenState extends State<HomeScreen>
                                     decoration: InputDecoration(
                                       hintText: 'Search notes by title...',
                                       filled: true,
-                                      fillColor: Colors.white,
+                                      fillColor: AppColors.white(isDarkMode),
                                       contentPadding:
                                           const EdgeInsets.symmetric(
                                             horizontal: 16,

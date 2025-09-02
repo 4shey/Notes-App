@@ -1,28 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_notes_app/provider/theme_prrovider.dart';
 import 'package:flutter_notes_app/provider/users_provider.dart';
-import 'package:flutter_notes_app/widgets/confirm_dialog.dart';
 import 'package:flutter_notes_app/widgets/exit_dialog.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_notes_app/screens/login_screen.dart';
 import 'package:flutter_notes_app/widgets/edit_profile.dart';
 import 'package:flutter_notes_app/theme/color.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 class ProfileScreen extends StatelessWidget {
-  final bool isDarkMode;
+  const ProfileScreen({super.key});
 
-  const ProfileScreen({super.key, this.isDarkMode = false});
+  Future<void> _showAppInfo(BuildContext context) async {
+    final info = await PackageInfo.fromPlatform();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("App Info"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text("App Name: ${info.appName}"),
+            Text("Package: ${info.packageName}"),
+            Text("Version: ${info.version}"),
+            Text("Build: ${info.buildNumber}"),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Close"),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final provider = context.watch<EditProfileProvider>();
-    final user = provider.user;
+    final userProvider = context.watch<EditProfileProvider>();
+    final user = userProvider.user;
 
-    final displayName = (user?.name.isNotEmpty ?? false)
-        ? user!.name
-        : "ambatukam";
+    final themeProvider = context.watch<ThemeProvider>();
+    bool isDarkMode = themeProvider.isDarkMode;
 
-    final email = user?.email ?? "example@mail.com";
+    final displayName = (user?.name.isNotEmpty ?? false) ? user!.name : "guest";
+    final email = user?.email ?? "guest@mail.com";
 
     return Scaffold(
       backgroundColor: AppColors.backgroundColor(isDarkMode),
@@ -34,13 +60,14 @@ class ProfileScreen extends StatelessWidget {
             children: [
               Text(
                 'Notely',
-                style: TextStyle(fontFamily: 'TitanOne', fontSize: 20),
+                style: const TextStyle(fontFamily: 'TitanOne', fontSize: 20),
               ),
               const SizedBox(height: 32),
+              // avatar + edit
               Center(
                 child: GestureDetector(
                   onTap: () async {
-                    await provider.pickAndUpdateProfileImage(context);
+                    await userProvider.pickAndUpdateProfileImage(context);
                   },
                   child: Stack(
                     children: [
@@ -56,17 +83,17 @@ class ProfileScreen extends StatelessWidget {
                         child: CircleAvatar(
                           radius: 18,
                           backgroundColor: AppColors.white(isDarkMode),
-                          child: const Icon(
+                          child: Icon(
                             Icons.edit,
                             size: 20,
-                            color: Colors.deepPurple,
+                            color: AppColors.mainColor(isDarkMode),
                           ),
                         ),
                       ),
-                      if (provider.isLoadingImage)
+                      if (userProvider.isLoadingImage)
                         Positioned.fill(
                           child: Container(
-                            decoration: BoxDecoration(
+                            decoration: const BoxDecoration(
                               color: Colors.black26,
                               shape: BoxShape.circle,
                             ),
@@ -99,6 +126,8 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
+
+              // Menu Items
               _buildMenuItem(context, Icons.edit, "Edit Profile", () async {
                 if (user == null) return;
                 final result = await showDialog<Map<String, String>>(
@@ -106,33 +135,71 @@ class ProfileScreen extends StatelessWidget {
                   builder: (context) => EditProfileDialog(user: user),
                 );
                 if (result != null) {
-                  provider.updateProfile(
+                  userProvider.updateProfile(
                     name: result["name"],
                     email: result["email"],
                   );
                 }
-              }),
+              }, isDarkMode),
+
+              // App Theme toggle langsung
+              SwitchListTile(
+                secondary: Icon(
+                  Icons.brightness_6,
+                  color: AppColors.mainColor(isDarkMode),
+                ),
+                title: Text(
+                  'App Theme',
+                  style: GoogleFonts.nunito(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.darkgrey(isDarkMode),
+                  ),
+                ),
+                value: isDarkMode,
+                onChanged: (value) => themeProvider.toggleDarkMode(value),
+                activeColor: AppColors.mainColor(isDarkMode),
+              ),
+
+              // // App Info
+              // ListTile(
+              //   leading: Icon(
+              //     Icons.info,
+              //     color: AppColors.mainColor(isDarkMode),
+              //   ),
+              //   title: Text(
+              //     'App Info',
+              //     style: GoogleFonts.nunito(
+              //       fontSize: 16,
+              //       fontWeight: FontWeight.w600,
+              //       color: AppColors.darkgrey(isDarkMode),
+              //     ),
+              //   ),
+              //   onTap: () => _showAppInfo(context),
+              // ),
+
               _buildMenuItem(context, Icons.logout, "Log Out", () async {
-                final confirm = await showDialog<bool>(
+                await showDialog<bool>(
                   context: context,
-                  builder: (context) => ConfirmDeleteDialog(
+                  builder: (context) => ConfirmCloseDialog(
                     title: "Konfirmasi",
                     content: "Apakah yakin ingin logout?",
+                    onConfirm: () async {
+                      final provider = context.read<EditProfileProvider>();
+                      await provider.logout();
+
+                      if (context.mounted) {
+                        Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                            builder: (_) => const LoginScreen(),
+                          ),
+                          (route) => false,
+                        );
+                      }
+                    },
                   ),
                 );
-
-                if (confirm == true) {
-                  final provider = context.read<EditProfileProvider>();
-                  await provider.logout();
-
-                  if (context.mounted) {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      (route) => false,
-                    );
-                  }
-                }
-              }),
+              }, isDarkMode),
             ],
           ),
         ),
@@ -145,6 +212,7 @@ class ProfileScreen extends StatelessWidget {
     IconData icon,
     String text,
     VoidCallback onTap,
+    bool isDarkMode,
   ) {
     return ListTile(
       leading: Icon(icon, color: AppColors.mainColor(isDarkMode)),

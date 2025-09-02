@@ -3,6 +3,7 @@ import 'package:flutter_notes_app/models/users.dart';
 import 'package:flutter_notes_app/provider/theme_prrovider.dart';
 import 'package:flutter_notes_app/theme/color.dart';
 import 'package:flutter_notes_app/widgets/input_decoration.dart';
+import 'package:flutter_notes_app/widgets/snackbar.dart';
 import 'package:provider/provider.dart';
 
 class EditProfileDialog extends StatefulWidget {
@@ -57,12 +58,20 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
             const SizedBox(height: 34),
             TextField(
               controller: _nameController,
-              decoration: inputDecoration('Name', Icons.person,themeProvider.isDarkMode),
+              decoration: inputDecoration(
+                'Name',
+                Icons.person,
+                themeProvider.isDarkMode,
+              ),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _emailController,
-              decoration: inputDecoration('Email', Icons.email,themeProvider.isDarkMode),
+              decoration: inputDecoration(
+                'Email',
+                Icons.email,
+                themeProvider.isDarkMode,
+              ),
             ),
             const SizedBox(height: 20),
             Row(
@@ -87,9 +96,20 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
                 const SizedBox(width: 8),
                 ElevatedButton(
                   onPressed: () {
+                    final email = _emailController.text.trim();
+
+                    if (!email.endsWith('@gmail.com')) {
+                      TopToast.show(
+                        context,
+                        "Email must end with @gmail.com",
+                        type: ToastType.error,
+                      );
+                      return;
+                    }
+
                     Navigator.pop(context, {
                       "name": _nameController.text.trim(),
-                      "email": _emailController.text.trim(),
+                      "email": email,
                     });
                   },
                   style: ElevatedButton.styleFrom(
