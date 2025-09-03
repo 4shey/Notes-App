@@ -49,7 +49,7 @@ class EditProfileProvider with ChangeNotifier {
 
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
-      backgroundColor: AppColors.backgroundColor(isDarkMode),
+      backgroundColor: AppColors.white(isDarkMode),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
@@ -59,19 +59,19 @@ class EditProfileProvider with ChangeNotifier {
             ListTile(
               leading: Icon(
                 Icons.camera_alt,
-                color: AppColors.white(isDarkMode),
+                color: AppColors.darkgrey(isDarkMode),
               ),
               title: Text(
                 "Camera",
-                style: TextStyle(color: AppColors.white(isDarkMode)),
+                style: TextStyle(color: AppColors.darkgrey(isDarkMode)),
               ),
               onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
             ListTile(
-              leading: Icon(Icons.photo, color: AppColors.white(isDarkMode)),
+              leading: Icon(Icons.photo, color: AppColors.darkgrey(isDarkMode)),
               title: Text(
                 "Gallery",
-                style: TextStyle(color: AppColors.white(isDarkMode)),
+                style: TextStyle(color: AppColors.darkgrey(isDarkMode)),
               ),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
