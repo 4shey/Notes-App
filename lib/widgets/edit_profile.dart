@@ -58,8 +58,14 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
             const SizedBox(height: 34),
             TextField(
               controller: _nameController,
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
+                color: AppColors.darkgrey(isDarkMode),
+              ),
               decoration: inputDecoration(
-                'Name',
+                "Name",
                 Icons.person,
                 themeProvider.isDarkMode,
               ),
@@ -67,8 +73,14 @@ class _EditProfileDialogState extends State<EditProfileDialog> {
             const SizedBox(height: 12),
             TextField(
               controller: _emailController,
+              style: TextStyle(
+                fontFamily: 'Nunito',
+                fontWeight: FontWeight.w800,
+                fontSize: 18,
+                color: AppColors.darkgrey(isDarkMode),
+              ),
               decoration: inputDecoration(
-                'Email',
+                "Email",
                 Icons.email,
                 themeProvider.isDarkMode,
               ),

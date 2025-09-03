@@ -2,7 +2,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/models/users.dart';
 import 'package:flutter_notes_app/models/users_storage.dart';
+import 'package:flutter_notes_app/provider/theme_prrovider.dart';
+import 'package:flutter_notes_app/theme/color.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 class EditProfileProvider with ChangeNotifier {
   final UserStorage _storage = UserStorage();
@@ -41,19 +44,35 @@ class EditProfileProvider with ChangeNotifier {
   Future<void> pickAndUpdateProfileImage(BuildContext context) async {
     final picker = ImagePicker();
 
+    final themeProvider = context.watch<ThemeProvider>();
+    final isDarkMode = themeProvider.isDarkMode;
+
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
+      backgroundColor: AppColors.backgroundColor(isDarkMode),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
       builder: (context) => SafeArea(
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text("Camera"),
+              leading: Icon(
+                Icons.camera_alt,
+                color: AppColors.white(isDarkMode),
+              ),
+              title: Text(
+                "Camera",
+                style: TextStyle(color: AppColors.white(isDarkMode)),
+              ),
               onTap: () => Navigator.pop(context, ImageSource.camera),
             ),
             ListTile(
-              leading: const Icon(Icons.photo),
-              title: const Text("Gallery"),
+              leading: Icon(Icons.photo, color: AppColors.white(isDarkMode)),
+              title: Text(
+                "Gallery",
+                style: TextStyle(color: AppColors.white(isDarkMode)),
+              ),
               onTap: () => Navigator.pop(context, ImageSource.gallery),
             ),
           ],
@@ -68,9 +87,7 @@ class EditProfileProvider with ChangeNotifier {
 
     final pickedFile = await picker.pickImage(source: source);
     if (pickedFile != null) {
-      final bytes = await File(
-        pickedFile.path,
-      ).readAsBytes();
+      final bytes = await File(pickedFile.path).readAsBytes();
       _user = _user?.copyWith(profileImage: bytes);
 
       if (_user != null) {

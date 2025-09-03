@@ -115,10 +115,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 50),
                   TextField(
                     controller: _emailController,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Nunito',
                       fontWeight: FontWeight.w800,
                       fontSize: 18,
+                      color: AppColors.darkgrey(isDarkMode),
                     ),
                     decoration: inputDecoration(
                       "Email",
@@ -130,10 +131,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   TextField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Nunito',
                       fontWeight: FontWeight.w800,
                       fontSize: 18,
+                      color: AppColors.darkgrey(isDarkMode),
                     ),
                     decoration:
                         inputDecoration(
@@ -183,12 +185,13 @@ class _LoginScreenState extends State<LoginScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
+                      Text(
                         "Don't have an account? ",
                         style: TextStyle(
                           fontFamily: 'Nunito',
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
+                          color: AppColors.darkgrey(isDarkMode),
                         ),
                       ),
                       TextButton(

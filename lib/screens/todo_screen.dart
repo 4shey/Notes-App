@@ -177,6 +177,7 @@ class ToDoScreenState extends State<ToDoScreen>
                                         fontFamily: 'Nunito',
                                         fontSize: 20,
                                         fontWeight: FontWeight.w900,
+                                        color: AppColors.darkgrey(isDarkMode)
                                       ),
                                     ),
                                   )

@@ -8,7 +8,7 @@ InputDecoration inputDecoration(String label, IconData icon, bool isDarkMode) {
       fontFamily: 'Nunito',
       fontWeight: FontWeight.w700,
       fontSize: 18,
-      color: AppColors.lightGrey(isDarkMode),
+      color: AppColors.darkgrey(isDarkMode),
     ),
     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16)),
     focusedBorder: OutlineInputBorder(

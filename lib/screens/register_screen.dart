@@ -110,10 +110,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 50),
                 TextField(
                   controller: _nameController,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Nunito',
                     fontWeight: FontWeight.w800,
                     fontSize: 18,
+                    color: AppColors.darkgrey(isDarkMode),
                   ),
                   decoration: inputDecoration(
                     "Name",
@@ -124,10 +125,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 16),
                 TextField(
                   controller: _emailController,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Nunito',
                     fontWeight: FontWeight.w800,
                     fontSize: 18,
+                    color: AppColors.darkgrey(isDarkMode),
                   ),
                   decoration: inputDecoration(
                     "Email",
@@ -139,10 +141,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Nunito',
                     fontWeight: FontWeight.w800,
                     fontSize: 18,
+                    color: AppColors.darkgrey(isDarkMode),
                   ),
                   decoration:
                       inputDecoration(
@@ -172,10 +175,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextField(
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Nunito',
                     fontWeight: FontWeight.w800,
                     fontSize: 18,
+                    color: AppColors.darkgrey(isDarkMode),
                   ),
                   decoration:
                       inputDecoration(
@@ -226,12 +230,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       "Already have an account? ",
                       style: TextStyle(
                         fontFamily: 'Nunito',
                         fontWeight: FontWeight.bold,
                         fontSize: 16,
+                        color: AppColors.darkgrey(isDarkMode),
                       ),
                     ),
                     TextButton(
