@@ -3,7 +3,7 @@ import 'package:flutter_notes_app/models/todo.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ToDoProvider extends ChangeNotifier {
-  late String userId; // ID user untuk filter data
+  late String userId;
 
   ToDoProvider({required this.userId});
 
@@ -11,7 +11,7 @@ class ToDoProvider extends ChangeNotifier {
 
   List<ToDoItem> get todos => _todos;
 
-  String get _storageKey => 'todos_$userId'; // key unik per user
+  String get _storageKey => 'todos_$userId';
 
   Future<void> loadTodos() async {
     final prefs = await SharedPreferences.getInstance();
@@ -56,7 +56,7 @@ class ToDoProvider extends ChangeNotifier {
   }
 
   Future<void> setUserIdAndLoad(String newUserId) async {
-    userId = newUserId; // update userId
-    await loadTodos(); // load data sesuai user baru
+    userId = newUserId;
+    await loadTodos();
   }
 }

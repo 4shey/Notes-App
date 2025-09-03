@@ -33,7 +33,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     String password = _passwordController.text.trim();
     String confirmPassword = _confirmPasswordController.text.trim();
 
-    if (name.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+    if (name.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
       TopToast.show(
         context,
         "All fields must be filled",
@@ -72,11 +75,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     if (!mounted) return;
 
-    TopToast.show(
-      context,
-      "Register success",
-      type: ToastType.success,
-    );
+    TopToast.show(context, "Register success", type: ToastType.success);
 
     Navigator.pushReplacement(
       context,
@@ -109,8 +108,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 50),
-
-                // 🔹 Name field
                 TextField(
                   controller: _nameController,
                   style: const TextStyle(
@@ -125,8 +122,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-
-                // 🔹 Email field
                 TextField(
                   controller: _emailController,
                   style: const TextStyle(
@@ -141,8 +136,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 16),
-
-                // 🔹 Password field
                 TextField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
@@ -151,30 +144,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     fontWeight: FontWeight.w800,
                     fontSize: 18,
                   ),
-                  decoration: inputDecoration(
-                    "Password",
-                    Icons.lock,
-                    themeProvider.isDarkMode,
-                  ).copyWith(
-                    suffixIcon: Padding(
-                      padding: const EdgeInsets.only(right: 12, left: 6),
-                      child: IconButton(
-                        icon: Icon(
-                          _obscurePassword ? Icons.visibility_off : Icons.visibility,
-                          color: AppColors.mainColor(isDarkMode),
+                  decoration:
+                      inputDecoration(
+                        "Password",
+                        Icons.lock,
+                        themeProvider.isDarkMode,
+                      ).copyWith(
+                        suffixIcon: Padding(
+                          padding: const EdgeInsets.only(right: 12, left: 6),
+                          child: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: AppColors.mainColor(isDarkMode),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
                         ),
-                        onPressed: () {
-                          setState(() {
-                            _obscurePassword = !_obscurePassword;
-                          });
-                        },
                       ),
-                    ),
-                  ),
                 ),
                 const SizedBox(height: 16),
-
-                // 🔹 Confirm password
                 TextField(
                   controller: _confirmPasswordController,
                   obscureText: _obscureConfirmPassword,
@@ -183,30 +177,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     fontWeight: FontWeight.w800,
                     fontSize: 18,
                   ),
-                  decoration: inputDecoration(
-                    "Confirm Password",
-                    Icons.lock,
-                    themeProvider.isDarkMode,
-                  ).copyWith(
-                    suffixIcon: Padding(
-                      padding: const EdgeInsets.only(right: 12, left: 6),
-                      child: IconButton(
-                        icon: Icon(
-                          _obscureConfirmPassword ? Icons.visibility_off : Icons.visibility,
-                          color: AppColors.mainColor(isDarkMode),
+                  decoration:
+                      inputDecoration(
+                        "Confirm Password",
+                        Icons.lock,
+                        themeProvider.isDarkMode,
+                      ).copyWith(
+                        suffixIcon: Padding(
+                          padding: const EdgeInsets.only(right: 12, left: 6),
+                          child: IconButton(
+                            icon: Icon(
+                              _obscureConfirmPassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: AppColors.mainColor(isDarkMode),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscureConfirmPassword =
+                                    !_obscureConfirmPassword;
+                              });
+                            },
+                          ),
                         ),
-                        onPressed: () {
-                          setState(() {
-                            _obscureConfirmPassword = !_obscureConfirmPassword;
-                          });
-                        },
                       ),
-                    ),
-                  ),
                 ),
                 const SizedBox(height: 50),
-
-                // 🔹 Register button
                 ElevatedButton(
                   onPressed: _register,
                   style: ElevatedButton.styleFrom(
@@ -227,8 +223,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                 ),
                 const SizedBox(height: 12),
-
-                // 🔹 Login redirect
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -244,7 +238,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       onPressed: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => const LoginScreen()),
+                          MaterialPageRoute(
+                            builder: (context) => const LoginScreen(),
+                          ),
                         );
                       },
                       child: Text(

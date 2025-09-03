@@ -30,7 +30,6 @@ class TopToast extends StatefulWidget {
   }) {
     final overlay = Overlay.of(context);
 
-    // kalau ada toast aktif → update aja isinya
     if (_activeEntry != null && _activeKey?.currentState != null) {
       _activeKey!.currentState!.updateContent(message, type);
       _timer?.cancel();
@@ -44,8 +43,6 @@ class TopToast extends StatefulWidget {
       });
       return;
     }
-
-    // kalau belum ada toast aktif → bikin baru
     final key = GlobalKey<_TopToastState>();
     final entry = OverlayEntry(
       builder: (context) =>
@@ -59,7 +56,7 @@ class TopToast extends StatefulWidget {
     _timer?.cancel();
     _timer = Timer(duration, () async {
       if (_activeKey?.currentState != null) {
-        await _activeKey!.currentState!.hide(); // animasi keluar
+        await _activeKey!.currentState!.hide();
       }
       _activeEntry?.remove();
       _activeEntry = null;
@@ -91,11 +88,11 @@ class _TopToastState extends State<TopToast>
     );
 
     _offsetAnimation = Tween<Offset>(
-      begin: const Offset(0, -1), // mulai dari atas
-      end: Offset.zero, // ke posisi normal
+      begin: const Offset(0, -1),
+      end: Offset.zero,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
-    _controller.forward(); // animasi masuk
+    _controller.forward();
   }
 
   void updateContent(String newMessage, ToastType newType) {
@@ -106,7 +103,7 @@ class _TopToastState extends State<TopToast>
   }
 
   Future<void> hide() async {
-    await _controller.reverse(); // animasi keluar ke atas
+    await _controller.reverse();
   }
 
   @override

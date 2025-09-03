@@ -2,9 +2,9 @@ import 'dart:convert';
 
 class ToDoItem {
   String id;
-  String userId; // user yang punya todo
+  String userId;
   String title;
-  String? description; // opsional
+  String? description;
   String category;
   bool isCompleted;
 

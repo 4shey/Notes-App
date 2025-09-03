@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/note.dart';
 
 class NoteProvider extends ChangeNotifier {
-  late String userId; // ID user untuk filter data
+  late String userId;
 
   NoteProvider({required this.userId});
 
@@ -11,7 +11,7 @@ class NoteProvider extends ChangeNotifier {
 
   List<Note> get notes => _notes;
 
-  String get _storageKey => 'notes_$userId'; // key unik per user
+  String get _storageKey => 'notes_$userId';
 
   Future<void> loadNotes() async {
     final prefs = await SharedPreferences.getInstance();
@@ -56,7 +56,7 @@ class NoteProvider extends ChangeNotifier {
   }
 
   Future<void> setUserIdAndLoad(String newUserId) async {
-    userId = newUserId; // update userId
-    await loadNotes(); // load data sesuai user baru
+    userId = newUserId;
+    await loadNotes();
   }
 }

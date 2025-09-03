@@ -6,7 +6,6 @@ import 'package:flutter_notes_app/provider/note_provider.dart';
 import 'package:flutter_notes_app/provider/theme_prrovider.dart';
 import 'package:flutter_notes_app/theme/color.dart';
 import 'package:flutter_notes_app/widgets/confirm_dialog.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../models/note.dart';
 
@@ -111,7 +110,7 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
     bool isDarkMode = themeProvider.isDarkMode;
 
     return Scaffold(
-      backgroundColor: AppColors.white(isDarkMode),
+      backgroundColor: AppColors.backgroundColor(isDarkMode),
       endDrawer: _buildCategoryDrawer(),
       appBar: AppBar(
         centerTitle: true,
@@ -119,7 +118,12 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
         elevation: 0,
         title: Text(
           isEditMode ? "Edit Note" : "Create Note",
-          style: GoogleFonts.nunito(fontSize: 20, fontWeight: FontWeight.w900),
+          style: TextStyle(
+            fontFamily: 'Nunito',
+            fontSize: 28,
+            fontWeight: FontWeight.w900,
+            color: AppColors.darkgrey(isDarkMode),
+          ),
         ),
         leading: IconButton(
           icon: isDarkMode
@@ -177,9 +181,11 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
               TextField(
                 controller: titleController,
                 focusNode: _titleFocusNode,
-                style: GoogleFonts.nunito(
-                  fontSize: 18,
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 24,
                   fontWeight: FontWeight.w800,
+                  color: AppColors.darkgrey(isDarkMode),
                 ),
                 decoration: const InputDecoration(
                   hintText: "Title",
@@ -189,9 +195,11 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
               ),
               TextField(
                 controller: contentController,
-                style: GoogleFonts.nunito(
-                  fontSize: 16,
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontSize: 20,
                   fontWeight: FontWeight.w600,
+                  color: AppColors.lightGrey(isDarkMode),
                 ),
                 decoration: const InputDecoration(
                   hintText: "Content",
@@ -244,37 +252,71 @@ class _EditNoteScreenState extends State<EditNoteScreen> {
   Widget _buildCategoryDrawer() {
     final themeProvider = context.watch<ThemeProvider>();
     bool isDarkMode = themeProvider.isDarkMode;
+
+    final List<String> categoryOptions = ['personal', 'work', 'school'];
+
     return Drawer(
+      backgroundColor: AppColors.white(isDarkMode),
       child: SafeArea(
+        top: false,
         child: ListView(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.zero,
           children: [
-            Text(
-              "Select Category",
-              style: GoogleFonts.nunito(
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                color: AppColors.darkgrey(isDarkMode),
+            DrawerHeader(
+              decoration: BoxDecoration(color: AppColors.mainColor(isDarkMode)),
+              child: Align(
+                alignment: Alignment.bottomLeft,
+                child: Text(
+                  "Select Category",
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
               ),
             ),
-            const Divider(),
-            for (var c in ["personal", "work", "school"])
-              RadioListTile<String>(
-                value: c,
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              child: Text(
+                "Category",
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.darkgrey(isDarkMode),
+                ),
+              ),
+            ),
+            ...categoryOptions.map((categoryOption) {
+              final displayName = categoryOption == 'all'
+                  ? 'All'
+                  : categoryOption == 'favorites'
+                  ? 'Favorites'
+                  : '${categoryOption[0].toUpperCase()}${categoryOption.substring(1)}';
+
+              return RadioListTile<String>(
+                value: categoryOption,
                 groupValue: selectedCategory,
+                activeColor: AppColors.mainColor(isDarkMode),
                 title: Text(
-                  c[0].toUpperCase() + c.substring(1),
-                  style: GoogleFonts.nunito(
+                  displayName,
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: AppColors.lightGrey(isDarkMode),
+                    color: AppColors.darkgrey(isDarkMode),
                   ),
                 ),
                 onChanged: (value) {
                   setState(() => selectedCategory = value);
                   Navigator.pop(context);
                 },
-              ),
+              );
+            }).toList(),
+
+            const SizedBox(height: 12),
           ],
         ),
       ),

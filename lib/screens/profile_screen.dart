@@ -7,37 +7,36 @@ import 'package:flutter_notes_app/screens/login_screen.dart';
 import 'package:flutter_notes_app/widgets/edit_profile.dart';
 import 'package:flutter_notes_app/theme/color.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
-  Future<void> _showAppInfo(BuildContext context) async {
-    final info = await PackageInfo.fromPlatform();
+  // Future<void> _showAppInfo(BuildContext context) async {
+  //   final info = await PackageInfo.fromPlatform();
 
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text("App Info"),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("App Name: ${info.appName}"),
-            Text("Package: ${info.packageName}"),
-            Text("Version: ${info.version}"),
-            Text("Build: ${info.buildNumber}"),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text("Close"),
-          ),
-        ],
-      ),
-    );
-  }
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => AlertDialog(
+  //       title: const Text("App Info"),
+  //       content: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           Text("App Name: ${info.appName}"),
+  //           Text("Package: ${info.packageName}"),
+  //           Text("Version: ${info.version}"),
+  //           Text("Build: ${info.buildNumber}"),
+  //         ],
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: const Text("Close"),
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +62,6 @@ class ProfileScreen extends StatelessWidget {
                 style: const TextStyle(fontFamily: 'TitanOne', fontSize: 20),
               ),
               const SizedBox(height: 32),
-              // avatar + edit
               Center(
                 child: GestureDetector(
                   onTap: () async {
@@ -126,8 +124,6 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 32),
-
-              // Menu Items
               _buildMenuItem(context, Icons.edit, "Edit Profile", () async {
                 if (user == null) return;
                 final result = await showDialog<Map<String, String>>(
@@ -142,7 +138,6 @@ class ProfileScreen extends StatelessWidget {
                 }
               }, isDarkMode),
 
-              // App Theme toggle langsung
               SwitchListTile(
                 secondary: Icon(
                   Icons.brightness_6,
@@ -177,13 +172,12 @@ class ProfileScreen extends StatelessWidget {
               //   ),
               //   onTap: () => _showAppInfo(context),
               // ),
-
               _buildMenuItem(context, Icons.logout, "Log Out", () async {
                 await showDialog<bool>(
                   context: context,
                   builder: (context) => ConfirmCloseDialog(
-                    title: "Konfirmasi",
-                    content: "Apakah yakin ingin logout?",
+                    title: "Confirm",
+                    content: "Are you sure want to log out?",
                     onConfirm: () async {
                       final provider = context.read<EditProfileProvider>();
                       await provider.logout();

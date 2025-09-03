@@ -4,7 +4,6 @@ import 'package:flutter_notes_app/models/note.dart';
 import 'package:flutter_notes_app/provider/theme_prrovider.dart';
 import 'package:flutter_notes_app/screens/edit_note_screen.dart';
 import 'package:flutter_notes_app/screens/home_screen.dart';
-import 'package:flutter_notes_app/screens/setting_screen.dart';
 import 'package:flutter_notes_app/screens/todo_screen.dart';
 import 'package:flutter_notes_app/screens/profile_screen.dart';
 import 'package:flutter_notes_app/widgets/exit_dialog.dart';
@@ -130,7 +129,6 @@ class _BottomNavbarState extends State<BottomNavbar> {
         );
 
         return shouldClose ? false : false;
-        // return false karena sudah handle close manual
       },
       child: Scaffold(
         backgroundColor: AppColors.white(isDarkMode),
@@ -220,7 +218,6 @@ class _BottomNavbarState extends State<BottomNavbar> {
       borderRadius: BorderRadius.circular(12),
       onTap: () {
         if (_currentIndex != index) {
-          // Tutup search & drawer dulu
           if (_currentIndex == 0) {
             homeScreenKey.currentState?.closeSearchAndDrawer();
           } else if (_currentIndex == 1) {

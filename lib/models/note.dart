@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 class Note {
-  String userId; // ID user pemilik note
+  String userId;
   String title;
   String content;
   String category;
@@ -27,7 +27,7 @@ class Note {
 
   factory Note.fromMap(Map<String, dynamic> map) {
     return Note(
-      userId: map['userId'], // ambil userId dari storage
+      userId: map['userId'],
       title: map['title'],
       content: map['content'],
       category: map['category'],

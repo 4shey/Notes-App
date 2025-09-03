@@ -92,11 +92,7 @@ class _ToDoDialogState extends State<ToDoDialog> {
                     color: AppColors.darkgrey(isDarkMode),
                   ),
                   autofocus: true,
-                  decoration: inputDecoration(
-                    'Title',
-                    Icons.title, // kasih icon
-                    isDarkMode,
-                  ),
+                  decoration: inputDecoration('Title', Icons.title, isDarkMode),
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -108,7 +104,7 @@ class _ToDoDialogState extends State<ToDoDialog> {
                   ),
                   decoration: inputDecoration(
                     'Description (optional)',
-                    Icons.description, // kasih icon
+                    Icons.description,
                     isDarkMode,
                   ),
                   maxLines: 4,

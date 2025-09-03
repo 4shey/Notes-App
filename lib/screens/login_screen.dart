@@ -41,7 +41,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
     final user = await _userStorage.login(email, password);
     if (user != null) {
-      // Update provider sesuai user yang login
       final todoProvider = context.read<ToDoProvider>();
       final noteProvider = context.read<NoteProvider>();
       final userProvider = context.read<EditProfileProvider>();
@@ -59,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
         context,
         "Invalid email or password",
         type: ToastType.error,
-      ); 
+      );
     }
   }
 
@@ -76,13 +75,12 @@ class _LoginScreenState extends State<LoginScreen> {
           builder: (context) => ConfirmCloseDialog(
             onConfirm: () {
               shouldClose = true;
-              SystemNavigator.pop(); // langsung close app
+              SystemNavigator.pop();
             },
           ),
         );
 
         return shouldClose ? false : false;
-        // return false karena sudah handle close manual
       },
       child: Scaffold(
         backgroundColor: AppColors.backgroundColor(isDarkMode),

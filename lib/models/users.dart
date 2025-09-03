@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 class User {
-  String id; // Unique user id, bisa pakai UUID atau auto-generated
+  String id;
   String email;
-  String password; // Bisa simpan hash untuk keamanan
-  String name; // Optional
-  bool isLoggedIn; // Untuk cek login sebelumnya
+  String password;
+  String name;
+  bool isLoggedIn;
   Uint8List? profileImage;
 
   User({
@@ -17,7 +17,7 @@ class User {
     this.isLoggedIn = false,
     this.profileImage,
   });
-  
+
   User copyWith({
     String? id,
     String? email,
@@ -36,7 +36,6 @@ class User {
     );
   }
 
-  // Convert User ke Map untuk storage
   Map<String, dynamic> toMap() {
     return {
       'id': id,
@@ -48,7 +47,6 @@ class User {
     };
   }
 
-  // Buat User dari Map
   factory User.fromMap(Map<String, dynamic> map) {
     return User(
       id: map['id'],
@@ -62,9 +60,7 @@ class User {
     );
   }
 
-  // Convert ke JSON
   String toJson() => json.encode(toMap());
 
-  // Buat User dari JSON
   factory User.fromJson(String source) => User.fromMap(json.decode(source));
 }

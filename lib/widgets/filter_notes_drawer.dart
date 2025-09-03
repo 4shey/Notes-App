@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/provider/theme_prrovider.dart';
 import 'package:flutter_notes_app/theme/color.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class FilterDrawerHome extends StatefulWidget {
-  final String selectedCategory; // category awal yang dipilih
-  final Function(String) onCategorySelected; // callback ke parent
+  final String selectedCategory;
+  final Function(String) onCategorySelected;
 
   const FilterDrawerHome({
     super.key,
@@ -19,19 +18,24 @@ class FilterDrawerHome extends StatefulWidget {
 }
 
 class _FilterDrawerHomeState extends State<FilterDrawerHome> {
-  late String _currentCategory; // category yang sedang dipilih
+  late String _currentCategory;
 
-  final List<String> _categories = ['all', 'favorites', 'personal', 'work', 'school']; // daftar category
+  final List<String> _categories = [
+    'all',
+    'favorites',
+    'personal',
+    'work',
+    'school',
+  ];
 
   @override
   void initState() {
     super.initState();
-    _currentCategory = widget.selectedCategory; // set category awal
+    _currentCategory = widget.selectedCategory;
   }
 
   @override
   Widget build(BuildContext context) {
-    
     final themeProvider = context.watch<ThemeProvider>();
     bool isDarkMode = themeProvider.isDarkMode;
     return Drawer(
@@ -41,14 +45,14 @@ class _FilterDrawerHomeState extends State<FilterDrawerHome> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            // Header drawer
             DrawerHeader(
-              decoration: BoxDecoration(color: AppColors.mainColor(isDarkMode)), // warna background
+              decoration: BoxDecoration(color: AppColors.mainColor(isDarkMode)),
               child: Align(
                 alignment: Alignment.bottomLeft,
                 child: Text(
-                  'Filter Notes', // judul drawer
-                  style: GoogleFonts.nunito(
+                  'Filter Notes',
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
                     color: Colors.white,
                     fontSize: 20,
                     fontWeight: FontWeight.w900,
@@ -56,37 +60,40 @@ class _FilterDrawerHomeState extends State<FilterDrawerHome> {
                 ),
               ),
             ),
-            // Label Category
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               child: Text(
-                'Category', // teks label
-                style: GoogleFonts.nunito(
+                'Category',
+                style: TextStyle(
+                  fontFamily: 'Nunito',
                   fontWeight: FontWeight.w900,
+                  color: AppColors.darkgrey(isDarkMode),
                 ),
               ),
             ),
-            // List Radio untuk tiap category
-            ..._categories.map((c) {
-              final displayName = c == 'all' // tampilkan All
+            ..._categories.map((category) {
+              final displayName = category == 'all'
                   ? 'All'
-                  : c == 'favorites' // tampilkan Favorites
-                      ? 'Favorites'
-                      : '${c[0].toUpperCase()}${c.substring(1)}'; // capitalize huruf pertama
+                  : category == 'favorites'
+                  ? 'Favorites'
+                  : '${category[0].toUpperCase()}${category.substring(1)}';
+
               return RadioListTile<String>(
                 title: Text(
-                  displayName, // teks category
-                  style: GoogleFonts.nunito(
+                  displayName,
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
                     fontWeight: FontWeight.w700,
+                    color: AppColors.darkgrey(isDarkMode),
                   ),
                 ),
-                value: c, // nilai category
-                groupValue: _currentCategory, // category yang sedang dipilih
-                activeColor: AppColors.mainColor(isDarkMode), // warna saat dipilih
-                onChanged: (v) {
-                  setState(() => _currentCategory = v!); // update category
-                  widget.onCategorySelected(v!); // kirim ke parent
-                  Navigator.pop(context); // tutup drawer
+                value: category,
+                groupValue: _currentCategory,
+                activeColor: AppColors.mainColor(isDarkMode),
+                onChanged: (selectedCategory) {
+                  setState(() => _currentCategory = selectedCategory!);
+                  widget.onCategorySelected(selectedCategory!);
+                  Navigator.pop(context);
                 },
               );
             }).toList(),

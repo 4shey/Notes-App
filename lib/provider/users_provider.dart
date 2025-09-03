@@ -33,15 +33,14 @@ class EditProfileProvider with ChangeNotifier {
 
   Future<void> logout() async {
     final storage = UserStorage();
-    await storage.logout(); // hapus is_logged_in + currentUserId
-    _user = null; // reset user di provider
-    notifyListeners(); // update UI
+    await storage.logout();
+    _user = null;
+    notifyListeners();
   }
 
   Future<void> pickAndUpdateProfileImage(BuildContext context) async {
     final picker = ImagePicker();
 
-    // Pilih sumber gambar (camera/gallery)
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       builder: (context) => SafeArea(
@@ -67,12 +66,11 @@ class EditProfileProvider with ChangeNotifier {
     isLoadingImage = true;
     notifyListeners();
 
-    // Pick image langsung
     final pickedFile = await picker.pickImage(source: source);
     if (pickedFile != null) {
       final bytes = await File(
         pickedFile.path,
-      ).readAsBytes(); // konversi ke Uint8List
+      ).readAsBytes();
       _user = _user?.copyWith(profileImage: bytes);
 
       if (_user != null) {

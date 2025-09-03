@@ -55,12 +55,10 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   List<Note> filteredNotes(List<Note> notes, String currentUserId) {
-    // Filter note by current user first
     List<Note> userNotes = notes
         .where((note) => note.userId == currentUserId)
         .toList();
 
-    // Filter by category
     List<Note> baseFiltered;
     if (selectedCategory == "favorites") {
       baseFiltered = userNotes.where((n) => n.favorite).toList();
@@ -72,7 +70,6 @@ class _HomeScreenState extends State<HomeScreen>
       baseFiltered = List.from(userNotes);
     }
 
-    // Filter by search query
     if (searchQuery.isNotEmpty) {
       baseFiltered = baseFiltered
           .where(
@@ -196,10 +193,11 @@ class _HomeScreenState extends State<HomeScreen>
                                       fontFamily: 'Nunito',
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
+                                      color: AppColors.darkgrey(isDarkMode)
                                     ),
                                     autofocus: true,
                                     decoration: InputDecoration(
-                                      hintText: 'Search notes by title...',
+                                      hintText: 'Search notes by title...', 
                                       filled: true,
                                       fillColor: AppColors.white(isDarkMode),
                                       contentPadding:

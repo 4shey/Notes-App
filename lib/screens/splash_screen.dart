@@ -23,7 +23,7 @@ class _SplashIconScreenState extends State<SplashIconScreen> {
   }
 
   Future<void> _startSplash() async {
-    await Future.delayed(const Duration(seconds: 5)); // durasi splash
+    await Future.delayed(const Duration(seconds: 5));
 
     final userStorage = UserStorage();
     final isLoggedIn = await userStorage.isUserLoggedIn();

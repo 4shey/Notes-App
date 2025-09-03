@@ -5,10 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
 class FilterDrawerTodo extends StatefulWidget {
-  final String statusFilter; // filter status awal
-  final String categoryFilter; // filter category awal
-  final Function(String) onStatusSelected; // callback status ke parent
-  final Function(String) onCategorySelected; // callback category ke parent
+  final String statusFilter;
+  final String categoryFilter;
+  final Function(String) onStatusSelected;
+  final Function(String) onCategorySelected;
 
   const FilterDrawerTodo({
     super.key,
@@ -23,32 +23,31 @@ class FilterDrawerTodo extends StatefulWidget {
 }
 
 class _FilterDrawerTodoState extends State<FilterDrawerTodo> {
-  late String _status; // status yang dipilih saat ini
-  late String _category; // category yang dipilih saat ini
-  final List<String> _categories = [
-    'personal',
-    'school',
-    'work',
-  ]; // daftar category
+  late String _selectedStatus;
+  late String _selectedCategory;
+
+  final List<String> _statusOptions = ['all', 'completed', 'pending'];
+  final List<String> _categoryOptions = ['personal', 'school', 'work'];
 
   @override
   void initState() {
     super.initState();
-    _status = widget.statusFilter; // set status awal
-    _category = widget.categoryFilter; // set category awal
+    _selectedStatus = widget.statusFilter;
+    _selectedCategory = widget.categoryFilter;
   }
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = context.watch<ThemeProvider>();
     bool isDarkMode = themeProvider.isDarkMode;
+
     return Drawer(
+      backgroundColor: AppColors.white(isDarkMode),
       child: SafeArea(
         top: false,
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            // Header Drawer
             DrawerHeader(
               decoration: BoxDecoration(color: AppColors.mainColor(isDarkMode)),
               child: Align(
@@ -63,102 +62,98 @@ class _FilterDrawerTodoState extends State<FilterDrawerTodo> {
                 ),
               ),
             ),
-
-            // ===== Status Filter =====
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               child: Text(
                 "Status",
-                style: GoogleFonts.nunito(fontWeight: FontWeight.w900),
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.darkgrey(isDarkMode),
+                ),
               ),
             ),
-            // pilihan All
-            RadioListTile<String>(
-              title: Text(
-                'All',
-                style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
-              ),
-              value: 'all',
-              groupValue: _status,
-              activeColor: AppColors.mainColor(isDarkMode),
-              onChanged: (v) {
-                setState(() => _status = v!);
-                widget.onStatusSelected(v!);
-                Navigator.pop(context);
-              },
-            ),
-            // pilihan Completed
-            RadioListTile<String>(
-              title: Text(
-                'Completed',
-                style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
-              ),
-              value: 'completed',
-              groupValue: _status,
-              activeColor: AppColors.mainColor(isDarkMode),
-              onChanged: (v) {
-                setState(() => _status = v!);
-                widget.onStatusSelected(v!);
-                Navigator.pop(context);
-              },
-            ),
-            // pilihan Pending
-            RadioListTile<String>(
-              title: Text(
-                'Pending',
-                style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
-              ),
-              value: 'pending',
-              groupValue: _status,
-              activeColor: AppColors.mainColor(isDarkMode),
-              onChanged: (v) {
-                setState(() => _status = v!);
-                widget.onStatusSelected(v!);
-                Navigator.pop(context);
-              },
-            ),
+            ..._statusOptions.map((statusOption) {
+              final displayName = statusOption == 'all'
+                  ? 'All'
+                  : statusOption[0].toUpperCase() + statusOption.substring(1);
+
+              return RadioListTile<String>(
+                title: Text(
+                  displayName,
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.darkgrey(isDarkMode),
+                  ),
+                ),
+                value: statusOption,
+                groupValue: _selectedStatus,
+                activeColor: AppColors.mainColor(isDarkMode),
+                onChanged: (selectedStatus) {
+                  setState(() => _selectedStatus = selectedStatus!);
+                  widget.onStatusSelected(selectedStatus!);
+                  Navigator.pop(context);
+                },
+              );
+            }).toList(),
+
             const Divider(height: 24),
 
-            // ===== Category Filter =====
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               child: Text(
                 "Category",
-                style: GoogleFonts.nunito(fontWeight: FontWeight.w900),
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.darkgrey(isDarkMode),
+                ),
               ),
             ),
-            // pilihan All category
+
             RadioListTile<String>(
               title: Text(
                 'All',
-                style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontFamily: 'Nunito',
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.darkgrey(isDarkMode),
+                ),
               ),
               value: 'all',
-              groupValue: _category,
+              groupValue: _selectedCategory,
               activeColor: AppColors.mainColor(isDarkMode),
-              onChanged: (v) {
-                setState(() => _category = v!);
-                widget.onCategorySelected(v!);
+              onChanged: (selectedCategory) {
+                setState(() => _selectedCategory = selectedCategory!);
+                widget.onCategorySelected(selectedCategory!);
                 Navigator.pop(context);
               },
             ),
-            // pilihan category dari list _categories
-            ..._categories.map(
-              (c) => RadioListTile<String>(
+
+            ..._categoryOptions.map((categoryOption) {
+              final displayName =
+                  categoryOption[0].toUpperCase() + categoryOption.substring(1);
+
+              return RadioListTile<String>(
                 title: Text(
-                  c[0].toUpperCase() + c.substring(1),
-                  style: GoogleFonts.nunito(fontWeight: FontWeight.w700),
+                  displayName,
+                  style: TextStyle(
+                    fontFamily: 'Nunito',
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.darkgrey(isDarkMode),
+                  ),
                 ),
-                value: c,
-                groupValue: _category,
+                value: categoryOption,
+                groupValue: _selectedCategory,
                 activeColor: AppColors.mainColor(isDarkMode),
-                onChanged: (v) {
-                  setState(() => _category = v!);
-                  widget.onCategorySelected(v!);
+                onChanged: (selectedCategory) {
+                  setState(() => _selectedCategory = selectedCategory!);
+                  widget.onCategorySelected(selectedCategory!);
                   Navigator.pop(context);
                 },
-              ),
-            ),
+              );
+            }).toList(),
 
             const SizedBox(height: 12),
           ],

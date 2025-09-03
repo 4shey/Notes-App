@@ -73,26 +73,22 @@ class ToDoScreenState extends State<ToDoScreen>
   }
 
   List<ToDoItem> filteredTodos(List<ToDoItem> todos, String currentUserId) {
-    // filter per user
     List<ToDoItem> userTodos = todos
         .where((t) => t.userId == currentUserId)
         .toList();
 
-    // filter by status
     if (_statusFilter == 'completed') {
       userTodos = userTodos.where((t) => t.isCompleted).toList();
     } else if (_statusFilter == 'pending') {
       userTodos = userTodos.where((t) => !t.isCompleted).toList();
     }
 
-    // filter by category
     if (_categoryFilter != 'all') {
       userTodos = userTodos
           .where((t) => t.category == _categoryFilter)
           .toList();
     }
 
-    // filter by search query
     if (_searchQuery.isNotEmpty) {
       userTodos = userTodos
           .where(
@@ -110,7 +106,7 @@ class ToDoScreenState extends State<ToDoScreen>
 
     final provider = context.watch<ToDoProvider>();
     final userStorage = context.read<UserStorage>();
-    final currentUser = userStorage.loadUser(); // Future<User?>
+    final currentUser = userStorage.loadUser();
 
     final themeProvider = context.watch<ThemeProvider>();
     bool isDarkMode = themeProvider.isDarkMode;
@@ -189,6 +185,7 @@ class ToDoScreenState extends State<ToDoScreen>
                                       fontFamily: 'Nunito',
                                       fontSize: 16,
                                       fontWeight: FontWeight.w700,
+                                      color: AppColors.darkgrey(isDarkMode),
                                     ),
                                     autofocus: true,
                                     decoration: InputDecoration(

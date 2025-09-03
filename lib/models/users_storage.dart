@@ -3,10 +3,9 @@ import 'package:flutter_notes_app/models/users.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserStorage {
-  static const String usersKey = 'users'; // Semua user disimpan di sini
+  static const String usersKey = 'users';
   static const String currentUserIdKey = 'current_user_id';
 
-  // Simpan atau update user
   Future<void> saveUser(User user) async {
     final prefs = await SharedPreferences.getInstance();
     final usersMap = await _loadUsersMap(prefs);
@@ -17,7 +16,6 @@ class UserStorage {
     await prefs.setBool('is_logged_in_${user.id}', true);
   }
 
-  // Load current logged-in user
   Future<User?> loadUser() async {
     final prefs = await SharedPreferences.getInstance();
     final currentUserId = prefs.getString(currentUserIdKey);
@@ -33,7 +31,6 @@ class UserStorage {
     return user;
   }
 
-  // Logout user (hapus status login saja)
   Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     final currentUserId = prefs.getString(currentUserIdKey);
@@ -43,7 +40,6 @@ class UserStorage {
     }
   }
 
-  // Login user by email & password
   Future<User?> login(String email, String password) async {
     final prefs = await SharedPreferences.getInstance();
     final usersMap = await _loadUsersMap(prefs);
@@ -57,10 +53,9 @@ class UserStorage {
         return user;
       }
     }
-    return null; // email/password salah
+    return null;
   }
 
-  // Cek apakah ada user yang login
   Future<bool> isUserLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
     final currentUserId = prefs.getString(currentUserIdKey);
@@ -68,7 +63,6 @@ class UserStorage {
     return prefs.getBool('is_logged_in_$currentUserId') ?? false;
   }
 
-  // Load semua user sebagai Map
   Future<Map<String, dynamic>> _loadUsersMap(SharedPreferences prefs) async {
     final usersString = prefs.getString(usersKey);
     if (usersString == null) return {};
@@ -76,7 +70,6 @@ class UserStorage {
     return map;
   }
 
-  // Dapatkan semua user (opsional, misal buat switch akun)
   Future<List<User>> getAllUsers() async {
     final prefs = await SharedPreferences.getInstance();
     final usersMap = await _loadUsersMap(prefs);

@@ -6,7 +6,6 @@ import 'package:flutter_notes_app/provider/todo_provider.dart';
 import 'package:flutter_notes_app/provider/users_provider.dart';
 import 'package:flutter_notes_app/screens/splash_screen.dart';
 import 'package:provider/provider.dart';
-import 'theme/color.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,9 +40,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = context.watch<ThemeProvider>();
-    final isDark = themeProvider.isDarkMode;
-
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Notes & ToDo App',
