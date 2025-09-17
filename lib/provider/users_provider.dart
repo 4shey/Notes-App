@@ -2,10 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_notes_app/models/users.dart';
 import 'package:flutter_notes_app/models/users_storage.dart';
-import 'package:flutter_notes_app/provider/theme_prrovider.dart';
 import 'package:flutter_notes_app/theme/color.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:provider/provider.dart';
 
 class EditProfileProvider with ChangeNotifier {
   final UserStorage _storage = UserStorage();
