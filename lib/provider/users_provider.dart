@@ -41,11 +41,8 @@ class EditProfileProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> pickAndUpdateProfileImage(BuildContext context) async {
+  Future<void> pickAndUpdateProfileImage(BuildContext context,bool isDarkMode) async {
     final picker = ImagePicker();
-
-    final themeProvider = context.watch<ThemeProvider>();
-    final isDarkMode = themeProvider.isDarkMode;
 
     final source = await showModalBottomSheet<ImageSource>(
       context: context,

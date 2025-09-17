@@ -65,7 +65,7 @@ class ProfileScreen extends StatelessWidget {
               Center(
                 child: GestureDetector(
                   onTap: () async {
-                    await userProvider.pickAndUpdateProfileImage(context);
+                    await userProvider.pickAndUpdateProfileImage(context, isDarkMode);
                   },
                   child: Stack(
                     children: [
